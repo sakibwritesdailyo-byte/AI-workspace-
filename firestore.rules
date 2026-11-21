@@ -1,0 +1,494 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Pillar 0: Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Shared Security Primitives ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isOptionalBoundedString(data, field, maxLen) {
+      return !(field in data) || data[field] == null || (data[field] is string && data[field].size() <= maxLen);
+    }
+
+    function isValidSyncStatus(status) {
+      return status is string && (status == 'local_only' || status == 'pending' || status == 'synced' || status == 'conflict');
+    }
+
+    function isValidStringList(listVal, maxItems, maxItemLen) {
+      return listVal is list
+        && listVal.size() <= maxItems
+        && (listVal.size() == 0 || (listVal[0] is string && listVal[0].size() <= maxItemLen));
+    }
+
+    // --- Entity Validation Blueprints (never reference existing() or diff()) ---
+
+    function isValidUserProfile(data, uid) {
+      return data.keys().hasAll(['uid', 'schemaVersion', 'createdAt', 'updatedAt', 'serverCreatedAt', 'serverUpdatedAt'])
+        && data.keys().hasOnly([
+          'uid',
+          'email',
+          'displayName',
+          'photoURL',
+          'schemaVersion',
+          'createdAt',
+          'updatedAt',
+          'lastSyncAt',
+          'serverCreatedAt',
+          'serverUpdatedAt'
+        ])
+        && data.uid is string && data.uid == uid && isValidId(data.uid)
+        && data.schemaVersion is int && data.schemaVersion >= 1 && data.schemaVersion <= 20
+        && data.createdAt is string && data.createdAt.size() >= 1 && data.createdAt.size() <= 64
+        && data.updatedAt is string && data.updatedAt.size() >= 1 && data.updatedAt.size() <= 64
+        && isOptionalBoundedString(data, 'email', 320)
+        && isOptionalBoundedString(data, 'displayName', 120)
+        && isOptionalBoundedString(data, 'photoURL', 1024)
+        && isOptionalBoundedString(data, 'lastSyncAt', 64)
+        && data.serverCreatedAt is timestamp
+        && data.serverUpdatedAt is timestamp;
+    }
+
+    function isValidPreference(data, uid, settingKey) {
+      return data.keys().hasAll(['settingKey', 'ownerUid', 'revision', 'syncStatus', 'value', 'updatedAt', 'serverCreatedAt', 'serverUpdatedAt'])
+        && data.keys().hasOnly(['settingKey', 'ownerUid', 'revision', 'syncStatus', 'value', 'updatedAt', 'serverCreatedAt', 'serverUpdatedAt'])
+        && (settingKey == 'voiceSettings' || settingKey == 'modelSettings' || settingKey == 'appSettings')
+        && data.settingKey is string && data.settingKey == settingKey
+        && data.ownerUid is string && data.ownerUid == uid && isValidId(data.ownerUid)
+        && data.revision is int && data.revision >= 1 && data.revision <= 10000000
+        && isValidSyncStatus(data.syncStatus)
+        && data.value is map && data.value.keys().size() <= 25
+        && data.updatedAt is string && data.updatedAt.size() >= 1 && data.updatedAt.size() <= 64
+        && data.serverCreatedAt is timestamp
+        && data.serverUpdatedAt is timestamp;
+    }
+
+    function isValidProject(data, uid, projectId) {
+      return data.keys().hasAll([
+          'id', 'ownerUid', 'name', 'description', 'framework', 'entryFileId',
+          'folders', 'revision', 'syncStatus', 'createdAt', 'updatedAt',
+          'serverCreatedAt', 'serverUpdatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'ownerUid', 'name', 'description', 'framework', 'entryFileId',
+          'folders', 'revision', 'syncStatus', 'createdAt', 'updatedAt',
+          'deletedAt', 'serverCreatedAt', 'serverUpdatedAt'
+        ])
+        && data.id is string && data.id == projectId && isValidId(data.id)
+        && data.ownerUid is string && data.ownerUid == uid && isValidId(data.ownerUid)
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 200
+        && data.description is string && data.description.size() <= 2000
+        && data.framework is string && data.framework.size() <= 120
+        && data.entryFileId is string && data.entryFileId.size() <= 128
+        && isValidStringList(data.folders, 200, 255)
+        && data.revision is int && data.revision >= 1 && data.revision <= 10000000
+        && isValidSyncStatus(data.syncStatus)
+        && data.createdAt is string && data.createdAt.size() >= 1 && data.createdAt.size() <= 64
+        && data.updatedAt is string && data.updatedAt.size() >= 1 && data.updatedAt.size() <= 64
+        && isOptionalBoundedString(data, 'deletedAt', 64)
+        && data.serverCreatedAt is timestamp
+        && data.serverUpdatedAt is timestamp;
+    }
+
+    function isValidFile(data, uid, fileId) {
+      return data.keys().hasAll([
+          'id', 'projectId', 'ownerUid', 'name', 'path', 'folder',
+          'language', 'content', 'revision', 'syncStatus',
+          'createdAt', 'updatedAt', 'serverCreatedAt', 'serverUpdatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'projectId', 'ownerUid', 'name', 'path', 'folder',
+          'language', 'content', 'revision', 'syncStatus',
+          'createdAt', 'updatedAt', 'deletedAt', 'serverCreatedAt', 'serverUpdatedAt'
+        ])
+        && data.id is string && data.id == fileId && isValidId(data.id)
+        && isValidId(data.projectId)
+        && data.ownerUid is string && data.ownerUid == uid && isValidId(data.ownerUid)
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 255
+        && data.path is string && data.path.size() >= 1 && data.path.size() <= 512
+        && data.folder is string && data.folder.size() <= 255
+        && data.language is string && (
+          data.language == 'html' || data.language == 'css' ||
+          data.language == 'typescript' || data.language == 'javascript' ||
+          data.language == 'json' || data.language == 'markdown'
+        )
+        && data.content is string && data.content.size() <= 750000
+        && data.revision is int && data.revision >= 1 && data.revision <= 10000000
+        && isValidSyncStatus(data.syncStatus)
+        && data.createdAt is string && data.createdAt.size() >= 1 && data.createdAt.size() <= 64
+        && data.updatedAt is string && data.updatedAt.size() >= 1 && data.updatedAt.size() <= 64
+        && isOptionalBoundedString(data, 'deletedAt', 64)
+        && data.serverCreatedAt is timestamp
+        && data.serverUpdatedAt is timestamp;
+    }
+
+    function isValidConversation(data, uid, conversationId) {
+      return data.keys().hasAll([
+          'id', 'ownerUid', 'title', 'kind', 'isPinned', 'summary',
+          'revision', 'syncStatus', 'createdAt', 'updatedAt',
+          'serverCreatedAt', 'serverUpdatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'ownerUid', 'title', 'kind', 'projectId', 'isPinned', 'summary',
+          'durationSeconds', 'voiceSessionIds', 'deletedAt',
+          'revision', 'syncStatus', 'createdAt', 'updatedAt',
+          'serverCreatedAt', 'serverUpdatedAt'
+        ])
+        && data.id is string && data.id == conversationId && isValidId(data.id)
+        && data.ownerUid is string && data.ownerUid == uid && isValidId(data.ownerUid)
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 300
+        && data.kind is string && (data.kind == 'voice' || data.kind == 'chat')
+        && (!('projectId' in data) || data.projectId == null || isValidId(data.projectId))
+        && data.isPinned is bool
+        && data.summary is string && data.summary.size() <= 2000
+        && (!('durationSeconds' in data) || data.durationSeconds == null || (data.durationSeconds is int && data.durationSeconds >= 0 && data.durationSeconds <= 86400))
+        && (!('voiceSessionIds' in data) || isValidStringList(data.voiceSessionIds, 200, 128))
+        && isOptionalBoundedString(data, 'deletedAt', 64)
+        && data.revision is int && data.revision >= 1 && data.revision <= 10000000
+        && isValidSyncStatus(data.syncStatus)
+        && data.createdAt is string && data.createdAt.size() >= 1 && data.createdAt.size() <= 64
+        && data.updatedAt is string && data.updatedAt.size() >= 1 && data.updatedAt.size() <= 64
+        && data.serverCreatedAt is timestamp
+        && data.serverUpdatedAt is timestamp;
+    }
+
+    function isValidMessage(data, uid, messageId) {
+      return data.keys().hasAll([
+          'id', 'conversationId', 'ownerUid', 'orderIndex', 'role', 'content',
+          'timestamp', 'source', 'revision', 'syncStatus',
+          'createdAt', 'updatedAt', 'serverCreatedAt', 'serverUpdatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'conversationId', 'ownerUid', 'orderIndex', 'role', 'content',
+          'timestamp', 'source', 'language', 'deletedAt',
+          'revision', 'syncStatus', 'createdAt', 'updatedAt',
+          'serverCreatedAt', 'serverUpdatedAt'
+        ])
+        && data.id is string && data.id == messageId && isValidId(data.id)
+        && isValidId(data.conversationId)
+        && data.ownerUid is string && data.ownerUid == uid && isValidId(data.ownerUid)
+        && data.orderIndex is int && data.orderIndex >= 0 && data.orderIndex <= 100000
+        && data.role is string && (data.role == 'user' || data.role == 'assistant' || data.role == 'system')
+        && data.content is string && data.content.size() <= 120000
+        && data.timestamp is string && data.timestamp.size() <= 32
+        && data.source is string && (data.source == 'text' || data.source == 'voice')
+        && (!('language' in data) || data.language == null || (data.language is string && (data.language == 'en' || data.language == 'bn' || data.language == 'mixed')))
+        && isOptionalBoundedString(data, 'deletedAt', 64)
+        && data.revision is int && data.revision >= 1 && data.revision <= 10000000
+        && isValidSyncStatus(data.syncStatus)
+        && data.createdAt is string && data.createdAt.size() >= 1 && data.createdAt.size() <= 64
+        && data.updatedAt is string && data.updatedAt.size() >= 1 && data.updatedAt.size() <= 64
+        && data.serverCreatedAt is timestamp
+        && data.serverUpdatedAt is timestamp;
+    }
+
+    function isValidVoiceSession(data, uid, sessionId) {
+      return data.keys().hasAll([
+          'id', 'ownerUid', 'model', 'languageMode', 'status', 'micPermission',
+          'startedAt', 'durationSeconds', 'transcriptsSaved', 'transcripts',
+          'rawAudioStored', 'revision', 'syncStatus', 'createdAt', 'updatedAt',
+          'serverCreatedAt', 'serverUpdatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'ownerUid', 'conversationId', 'model', 'languageMode', 'status', 'micPermission',
+          'startedAt', 'endedAt', 'durationSeconds', 'errorMessage', 'transcriptsSaved',
+          'transcripts', 'rawAudioStored', 'deletedAt', 'revision', 'syncStatus',
+          'createdAt', 'updatedAt', 'serverCreatedAt', 'serverUpdatedAt'
+        ])
+        && data.id is string && data.id == sessionId && isValidId(data.id)
+        && data.ownerUid is string && data.ownerUid == uid && isValidId(data.ownerUid)
+        && (!('conversationId' in data) || data.conversationId == null || isValidId(data.conversationId))
+        && data.model is string && data.model.size() <= 120
+        && data.languageMode is string && (data.languageMode == 'bilingual' || data.languageMode == 'en' || data.languageMode == 'bn')
+        && data.status is string && data.status.size() <= 40
+        && data.micPermission is string && data.micPermission.size() <= 40
+        && data.startedAt is string && data.startedAt.size() <= 64
+        && isOptionalBoundedString(data, 'endedAt', 64)
+        && data.durationSeconds is int && data.durationSeconds >= 0 && data.durationSeconds <= 86400
+        && isOptionalBoundedString(data, 'errorMessage', 1000)
+        && data.transcriptsSaved is bool
+        && data.transcripts is list && data.transcripts.size() <= 500
+        && (data.transcripts.size() == 0 || data.transcripts[0] is map)
+        && data.rawAudioStored is bool && data.rawAudioStored == false
+        && isOptionalBoundedString(data, 'deletedAt', 64)
+        && data.revision is int && data.revision >= 1 && data.revision <= 10000000
+        && isValidSyncStatus(data.syncStatus)
+        && data.createdAt is string && data.createdAt.size() >= 1 && data.createdAt.size() <= 64
+        && data.updatedAt is string && data.updatedAt.size() >= 1 && data.updatedAt.size() <= 64
+        && data.serverCreatedAt is timestamp
+        && data.serverUpdatedAt is timestamp;
+    }
+
+    function isValidTombstone(data, uid, tombstoneId) {
+      return data.keys().hasAll([
+          'id', 'ownerUid', 'entityType', 'entityId', 'deletedAt',
+          'revision', 'serverCreatedAt', 'serverUpdatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'ownerUid', 'entityType', 'entityId', 'parentId', 'deletedAt',
+          'revision', 'serverCreatedAt', 'serverUpdatedAt'
+        ])
+        && data.id is string && data.id == tombstoneId && isValidId(data.id)
+        && data.ownerUid is string && data.ownerUid == uid && isValidId(data.ownerUid)
+        && data.entityType is string && (
+          data.entityType == 'project' || data.entityType == 'file' ||
+          data.entityType == 'conversation' || data.entityType == 'message' ||
+          data.entityType == 'voice_session' || data.entityType == 'setting'
+        )
+        && isValidId(data.entityId)
+        && (!('parentId' in data) || data.parentId == null || isValidId(data.parentId))
+        && data.deletedAt is string && data.deletedAt.size() >= 1 && data.deletedAt.size() <= 64
+        && data.revision is int && data.revision >= 1 && data.revision <= 10000000
+        && data.serverCreatedAt is timestamp
+        && data.serverUpdatedAt is timestamp;
+    }
+
+    function isValidSyncMeta(data, uid) {
+      return data.keys().hasAll(['ownerUid', 'schemaVersion', 'serverCreatedAt', 'serverUpdatedAt'])
+        && data.keys().hasOnly(['ownerUid', 'lastPushAt', 'lastPullAt', 'schemaVersion', 'serverCreatedAt', 'serverUpdatedAt'])
+        && data.ownerUid is string && data.ownerUid == uid && isValidId(data.ownerUid)
+        && data.schemaVersion is int && data.schemaVersion >= 1 && data.schemaVersion <= 20
+        && isOptionalBoundedString(data, 'lastPushAt', 64)
+        && isOptionalBoundedString(data, 'lastPullAt', 64)
+        && data.serverCreatedAt is timestamp
+        && data.serverUpdatedAt is timestamp;
+    }
+
+    // --- User Root & PII Profile (Owner-Only, No Public/Signed-In Listing) ---
+    match /users/{uid} {
+      allow get: if isValidId(uid) && isOwner(uid);
+      allow list: if false;
+      allow create: if isValidId(uid)
+        && isOwner(uid)
+        && isValidUserProfile(incoming(), uid)
+        && incoming().serverCreatedAt == request.time
+        && incoming().serverUpdatedAt == request.time;
+      allow update: if isValidId(uid)
+        && isOwner(uid)
+        && isValidUserProfile(incoming(), uid)
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().serverCreatedAt == existing().serverCreatedAt
+        && incoming().serverUpdatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'email', 'displayName', 'photoURL', 'schemaVersion', 'updatedAt', 'lastSyncAt', 'serverUpdatedAt'
+        ]);
+      allow delete: if isValidId(uid) && isOwner(uid);
+
+      // Account-syncable preferences only
+      match /preferences/{settingKey} {
+        allow get: if isValidId(uid) && isValidId(settingKey) && isOwner(uid);
+        allow list: if isOwner(uid) && existing().ownerUid == request.auth.uid;
+        allow create: if isValidId(uid) && isValidId(settingKey)
+          && isOwner(uid)
+          && isValidPreference(incoming(), uid, settingKey)
+          && incoming().serverCreatedAt == request.time
+          && incoming().serverUpdatedAt == request.time;
+        allow update: if isValidId(uid) && isValidId(settingKey)
+          && isOwner(uid)
+          && isValidPreference(incoming(), uid, settingKey)
+          && incoming().settingKey == existing().settingKey
+          && incoming().ownerUid == existing().ownerUid
+          && incoming().serverCreatedAt == existing().serverCreatedAt
+          && incoming().serverUpdatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'revision', 'syncStatus', 'value', 'updatedAt', 'serverUpdatedAt'
+          ]);
+        allow delete: if isValidId(uid) && isValidId(settingKey) && isOwner(uid);
+      }
+
+      // Workspace projects
+      match /projects/{projectId} {
+        allow get: if isValidId(uid) && isValidId(projectId) && isOwner(uid);
+        allow list: if isOwner(uid) && existing().ownerUid == request.auth.uid;
+        allow create: if isValidId(uid) && isValidId(projectId)
+          && isOwner(uid)
+          && isValidProject(incoming(), uid, projectId)
+          && incoming().serverCreatedAt == request.time
+          && incoming().serverUpdatedAt == request.time;
+        allow update: if isValidId(uid) && isValidId(projectId)
+          && isOwner(uid)
+          && isValidProject(incoming(), uid, projectId)
+          && incoming().id == existing().id
+          && incoming().ownerUid == existing().ownerUid
+          && incoming().createdAt == existing().createdAt
+          && incoming().serverCreatedAt == existing().serverCreatedAt
+          && incoming().serverUpdatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'name', 'description', 'framework', 'entryFileId', 'folders',
+            'revision', 'syncStatus', 'updatedAt', 'deletedAt', 'serverUpdatedAt'
+          ]);
+        allow delete: if isValidId(uid) && isValidId(projectId) && isOwner(uid);
+      }
+
+      // Workspace project files (parent project verified atomically via existsAfter on create)
+      match /files/{fileId} {
+        allow get: if isValidId(uid) && isValidId(fileId) && isOwner(uid);
+        allow list: if isOwner(uid) && existing().ownerUid == request.auth.uid;
+        allow create: if isValidId(uid) && isValidId(fileId)
+          && isOwner(uid)
+          && isValidFile(incoming(), uid, fileId)
+          && incoming().serverCreatedAt == request.time
+          && incoming().serverUpdatedAt == request.time
+          && existsAfter(/databases/$(database)/documents/users/$(uid)/projects/$(incoming().projectId));
+        allow update: if isValidId(uid) && isValidId(fileId)
+          && isOwner(uid)
+          && isValidFile(incoming(), uid, fileId)
+          && incoming().id == existing().id
+          && incoming().ownerUid == existing().ownerUid
+          && incoming().createdAt == existing().createdAt
+          && incoming().serverCreatedAt == existing().serverCreatedAt
+          && incoming().serverUpdatedAt == request.time
+          && existsAfter(/databases/$(database)/documents/users/$(uid)/projects/$(incoming().projectId))
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'projectId', 'name', 'path', 'folder', 'language', 'content',
+            'revision', 'syncStatus', 'updatedAt', 'deletedAt', 'serverUpdatedAt'
+          ]);
+        allow delete: if isValidId(uid) && isValidId(fileId) && isOwner(uid);
+      }
+
+      // Workspace conversations (active & soft-deleted trash)
+      match /conversations/{conversationId} {
+        allow get: if isValidId(uid) && isValidId(conversationId) && isOwner(uid);
+        allow list: if isOwner(uid) && existing().ownerUid == request.auth.uid;
+        allow create: if isValidId(uid) && isValidId(conversationId)
+          && isOwner(uid)
+          && isValidConversation(incoming(), uid, conversationId)
+          && incoming().serverCreatedAt == request.time
+          && incoming().serverUpdatedAt == request.time;
+        allow update: if isValidId(uid) && isValidId(conversationId)
+          && isOwner(uid)
+          && isValidConversation(incoming(), uid, conversationId)
+          && incoming().id == existing().id
+          && incoming().ownerUid == existing().ownerUid
+          && incoming().createdAt == existing().createdAt
+          && incoming().serverCreatedAt == existing().serverCreatedAt
+          && incoming().serverUpdatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'title', 'kind', 'projectId', 'isPinned', 'summary',
+            'durationSeconds', 'voiceSessionIds', 'deletedAt',
+            'revision', 'syncStatus', 'updatedAt', 'serverUpdatedAt'
+          ]);
+        allow delete: if isValidId(uid) && isValidId(conversationId) && isOwner(uid);
+      }
+
+      // Chat messages (parent conversation verified atomically via existsAfter on create/update)
+      match /messages/{messageId} {
+        allow get: if isValidId(uid) && isValidId(messageId) && isOwner(uid);
+        allow list: if isOwner(uid) && existing().ownerUid == request.auth.uid;
+        allow create: if isValidId(uid) && isValidId(messageId)
+          && isOwner(uid)
+          && isValidMessage(incoming(), uid, messageId)
+          && incoming().serverCreatedAt == request.time
+          && incoming().serverUpdatedAt == request.time
+          && existsAfter(/databases/$(database)/documents/users/$(uid)/conversations/$(incoming().conversationId));
+        allow update: if isValidId(uid) && isValidId(messageId)
+          && isOwner(uid)
+          && isValidMessage(incoming(), uid, messageId)
+          && incoming().id == existing().id
+          && incoming().ownerUid == existing().ownerUid
+          && incoming().createdAt == existing().createdAt
+          && incoming().serverCreatedAt == existing().serverCreatedAt
+          && incoming().serverUpdatedAt == request.time
+          && existsAfter(/databases/$(database)/documents/users/$(uid)/conversations/$(incoming().conversationId))
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'conversationId', 'orderIndex', 'role', 'content', 'timestamp', 'source', 'language',
+            'deletedAt', 'revision', 'syncStatus', 'updatedAt', 'serverUpdatedAt'
+          ]);
+        allow delete: if isValidId(uid) && isValidId(messageId) && isOwner(uid);
+      }
+
+      // Voice session logs
+      match /voiceSessions/{sessionId} {
+        allow get: if isValidId(uid) && isValidId(sessionId) && isOwner(uid);
+        allow list: if isOwner(uid) && existing().ownerUid == request.auth.uid;
+        allow create: if isValidId(uid) && isValidId(sessionId)
+          && isOwner(uid)
+          && isValidVoiceSession(incoming(), uid, sessionId)
+          && incoming().serverCreatedAt == request.time
+          && incoming().serverUpdatedAt == request.time;
+        allow update: if isValidId(uid) && isValidId(sessionId)
+          && isOwner(uid)
+          && isValidVoiceSession(incoming(), uid, sessionId)
+          && incoming().id == existing().id
+          && incoming().ownerUid == existing().ownerUid
+          && incoming().createdAt == existing().createdAt
+          && incoming().serverCreatedAt == existing().serverCreatedAt
+          && incoming().serverUpdatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'conversationId', 'model', 'languageMode', 'status', 'micPermission',
+            'startedAt', 'endedAt', 'durationSeconds', 'errorMessage',
+            'transcriptsSaved', 'transcripts', 'rawAudioStored', 'deletedAt',
+            'revision', 'syncStatus', 'updatedAt', 'serverUpdatedAt'
+          ]);
+        allow delete: if isValidId(uid) && isValidId(sessionId) && isOwner(uid);
+      }
+
+      // Deletion tombstones
+      match /tombstones/{tombstoneId} {
+        allow get: if isValidId(uid) && isValidId(tombstoneId) && isOwner(uid);
+        allow list: if isOwner(uid) && existing().ownerUid == request.auth.uid;
+        allow create: if isValidId(uid) && isValidId(tombstoneId)
+          && isOwner(uid)
+          && isValidTombstone(incoming(), uid, tombstoneId)
+          && incoming().serverCreatedAt == request.time
+          && incoming().serverUpdatedAt == request.time;
+        allow update: if isValidId(uid) && isValidId(tombstoneId)
+          && isOwner(uid)
+          && isValidTombstone(incoming(), uid, tombstoneId)
+          && incoming().id == existing().id
+          && incoming().ownerUid == existing().ownerUid
+          && incoming().entityType == existing().entityType
+          && incoming().entityId == existing().entityId
+          && incoming().serverCreatedAt == existing().serverCreatedAt
+          && incoming().serverUpdatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'parentId', 'deletedAt', 'revision', 'serverUpdatedAt'
+          ]);
+        allow delete: if isValidId(uid) && isValidId(tombstoneId) && isOwner(uid);
+      }
+
+      // Sync checkpoint metadata
+      match /syncMeta/{metaId} {
+        allow get: if isValidId(uid) && isValidId(metaId) && isOwner(uid);
+        allow list: if isOwner(uid) && existing().ownerUid == request.auth.uid;
+        allow create: if isValidId(uid) && isValidId(metaId)
+          && isOwner(uid)
+          && isValidSyncMeta(incoming(), uid)
+          && incoming().serverCreatedAt == request.time
+          && incoming().serverUpdatedAt == request.time;
+        allow update: if isValidId(uid) && isValidId(metaId)
+          && isOwner(uid)
+          && isValidSyncMeta(incoming(), uid)
+          && incoming().ownerUid == existing().ownerUid
+          && incoming().serverCreatedAt == existing().serverCreatedAt
+          && incoming().serverUpdatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'lastPushAt', 'lastPullAt', 'schemaVersion', 'serverUpdatedAt'
+          ]);
+        allow delete: if isValidId(uid) && isValidId(metaId) && isOwner(uid);
+      }
+    }
+  }
+}

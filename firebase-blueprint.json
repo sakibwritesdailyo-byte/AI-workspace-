@@ -1,0 +1,577 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Private user account profile isolated per authenticated Firebase UID.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Firebase Authentication UID matching document ID."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 320,
+          "description": "User email address (PII, owner-only access)."
+        },
+        "displayName": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Optional display name."
+        },
+        "photoURL": {
+          "type": "string",
+          "maxLength": 1024,
+          "description": "Optional avatar URL."
+        },
+        "schemaVersion": {
+          "type": "integer",
+          "description": "Workspace sync schema version."
+        },
+        "createdAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "updatedAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "lastSyncAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "serverCreatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "serverUpdatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "schemaVersion", "createdAt", "updatedAt", "serverCreatedAt", "serverUpdatedAt"]
+    },
+    "UserPreference": {
+      "title": "Account-Syncable User Preference",
+      "description": "Account-syncable workspace preference document (voiceSettings, modelSettings, appSettings). Excludes device_local selection pointers.",
+      "type": "object",
+      "properties": {
+        "settingKey": {
+          "type": "string",
+          "enum": ["voiceSettings", "modelSettings", "appSettings"]
+        },
+        "ownerUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "syncStatus": {
+          "type": "string",
+          "enum": ["local_only", "pending", "synced", "conflict"]
+        },
+        "value": {
+          "type": "object",
+          "description": "Sanitized preference payload."
+        },
+        "updatedAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "serverCreatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "serverUpdatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["settingKey", "ownerUid", "revision", "syncStatus", "value", "updatedAt", "serverCreatedAt", "serverUpdatedAt"]
+    },
+    "WorkspaceProject": {
+      "title": "Workspace Project",
+      "description": "Coding project metadata and folder structure; code files are stored in the sibling files collection.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "framework": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "entryFileId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "folders": {
+          "type": "array",
+          "description": "Bounded folder path list (max 200 entries)."
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "syncStatus": {
+          "type": "string",
+          "enum": ["local_only", "pending", "synced", "conflict"]
+        },
+        "createdAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "updatedAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "serverCreatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "serverUpdatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "ownerUid", "name", "description", "framework", "entryFileId", "folders", "revision", "syncStatus", "createdAt", "updatedAt", "serverCreatedAt", "serverUpdatedAt"]
+    },
+    "WorkspaceFile": {
+      "title": "Project File",
+      "description": "Individual project source file linked to a parent projectId.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "folder": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "language": {
+          "type": "string",
+          "enum": ["html", "css", "typescript", "javascript", "json", "markdown"]
+        },
+        "content": {
+          "type": "string",
+          "maxLength": 750000
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "syncStatus": {
+          "type": "string",
+          "enum": ["local_only", "pending", "synced", "conflict"]
+        },
+        "createdAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "updatedAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "serverCreatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "serverUpdatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "projectId", "ownerUid", "name", "path", "folder", "language", "content", "revision", "syncStatus", "createdAt", "updatedAt", "serverCreatedAt", "serverUpdatedAt"]
+    },
+    "WorkspaceConversation": {
+      "title": "Conversation",
+      "description": "Chat or voice conversation metadata (active or soft-deleted in trash via deletedAt).",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["voice", "chat"]
+        },
+        "projectId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "isPinned": {
+          "type": "boolean"
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "durationSeconds": {
+          "type": "integer"
+        },
+        "voiceSessionIds": {
+          "type": "array"
+        },
+        "deletedAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "syncStatus": {
+          "type": "string",
+          "enum": ["local_only", "pending", "synced", "conflict"]
+        },
+        "createdAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "updatedAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "serverCreatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "serverUpdatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "ownerUid", "title", "kind", "isPinned", "summary", "revision", "syncStatus", "createdAt", "updatedAt", "serverCreatedAt", "serverUpdatedAt"]
+    },
+    "WorkspaceMessage": {
+      "title": "Chat Message",
+      "description": "Individual message belonging to a conversation.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "conversationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "orderIndex": {
+          "type": "integer"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["user", "assistant", "system"]
+        },
+        "content": {
+          "type": "string",
+          "maxLength": 120000
+        },
+        "timestamp": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "source": {
+          "type": "string",
+          "enum": ["text", "voice"]
+        },
+        "language": {
+          "type": "string",
+          "enum": ["en", "bn", "mixed"]
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "syncStatus": {
+          "type": "string",
+          "enum": ["local_only", "pending", "synced", "conflict"]
+        },
+        "createdAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "updatedAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "serverCreatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "serverUpdatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "conversationId", "ownerUid", "orderIndex", "role", "content", "timestamp", "source", "revision", "syncStatus", "createdAt", "updatedAt", "serverCreatedAt", "serverUpdatedAt"]
+    },
+    "WorkspaceVoiceSession": {
+      "title": "Voice Session Record",
+      "description": "Metadata and optional text transcripts for a voice session (raw audio is never stored).",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "conversationId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "model": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "languageMode": {
+          "type": "string",
+          "enum": ["bilingual", "en", "bn"]
+        },
+        "status": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "micPermission": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "startedAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "endedAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "durationSeconds": {
+          "type": "integer"
+        },
+        "errorMessage": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "transcriptsSaved": {
+          "type": "boolean"
+        },
+        "transcripts": {
+          "type": "array"
+        },
+        "rawAudioStored": {
+          "type": "boolean"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "syncStatus": {
+          "type": "string",
+          "enum": ["local_only", "pending", "synced", "conflict"]
+        },
+        "createdAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "updatedAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "serverCreatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "serverUpdatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "ownerUid", "model", "languageMode", "status", "micPermission", "startedAt", "durationSeconds", "transcriptsSaved", "transcripts", "rawAudioStored", "revision", "syncStatus", "createdAt", "updatedAt", "serverCreatedAt", "serverUpdatedAt"]
+    },
+    "SyncTombstone": {
+      "title": "Sync Deletion Tombstone",
+      "description": "Cloud deletion marker so permanently deleted entities propagate safely across devices without resurrecting.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "ownerUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "entityType": {
+          "type": "string",
+          "enum": ["project", "file", "conversation", "message", "voice_session", "setting"]
+        },
+        "entityId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "parentId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "deletedAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "serverCreatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "serverUpdatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "ownerUid", "entityType", "entityId", "deletedAt", "revision", "serverCreatedAt", "serverUpdatedAt"]
+    },
+    "SyncMetaState": {
+      "title": "Sync Metadata State",
+      "description": "Per-user sync cursor and checkpoint metadata.",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "lastPushAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "lastPullAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "schemaVersion": {
+          "type": "integer"
+        },
+        "serverCreatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "serverUpdatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["ownerUid", "schemaVersion", "serverCreatedAt", "serverUpdatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Authenticated user profile document isolated strictly to owner UID."
+    },
+    "/users/{uid}/preferences/{settingKey}": {
+      "schema": { "$ref": "#/entities/UserPreference" },
+      "description": "Account-syncable user preferences (voiceSettings, modelSettings, appSettings)."
+    },
+    "/users/{uid}/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/WorkspaceProject" },
+      "description": "User-owned workspace project metadata and folder list."
+    },
+    "/users/{uid}/files/{fileId}": {
+      "schema": { "$ref": "#/entities/WorkspaceFile" },
+      "description": "User-owned project code files linked to parent projectId."
+    },
+    "/users/{uid}/conversations/{conversationId}": {
+      "schema": { "$ref": "#/entities/WorkspaceConversation" },
+      "description": "User-owned chat and voice conversations (active or soft-deleted with deletedAt)."
+    },
+    "/users/{uid}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/WorkspaceMessage" },
+      "description": "User-owned chat messages linked to parent conversationId."
+    },
+    "/users/{uid}/voiceSessions/{sessionId}": {
+      "schema": { "$ref": "#/entities/WorkspaceVoiceSession" },
+      "description": "User-owned voice session logs and optional transcripts."
+    },
+    "/users/{uid}/tombstones/{tombstoneId}": {
+      "schema": { "$ref": "#/entities/SyncTombstone" },
+      "description": "Permanent deletion tombstones for cross-device deletion propagation."
+    },
+    "/users/{uid}/syncMeta/{metaId}": {
+      "schema": { "$ref": "#/entities/SyncMetaState" },
+      "description": "Per-user sync checkpoint metadata."
+    }
+  }
+}
