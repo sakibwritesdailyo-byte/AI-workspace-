@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test": "tsx --test server/phase4Backend.test.ts src/components/workspaces/chatComposerUtils.test.ts src/hooks/useMobileKeyboard.test.ts src/services/backupService.test.ts src/services/chatService.test.ts src/services/firebase/conflictResolution.test.ts src/services/firebase/firebaseAuth.test.ts src/services/firebase/syncCoordinator.test.ts src/services/indexedDbStorage.test.ts src/services/voiceService.test.ts src/services/workspacePersistence.test.ts src/state/voiceStateMachine.test.ts src/state/workspaceReducer.test.ts src/utils/inputDiagnostics.test.ts src/utils/markdownParser.test.ts"
   },
   "dependencies": {
     "@codemirror/commands": "^6.11.1",
