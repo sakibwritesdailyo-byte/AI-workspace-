@@ -151,7 +151,7 @@ service cloud.firestore {
         ])
         && data.keys().hasOnly([
           'id', 'ownerUid', 'title', 'kind', 'projectId', 'isPinned', 'summary',
-          'durationSeconds', 'voiceSessionIds', 'deletedAt',
+          'durationSeconds', 'voiceSessionIds', 'deleted', 'deletedAt',
           'revision', 'syncStatus', 'createdAt', 'updatedAt',
           'serverCreatedAt', 'serverUpdatedAt'
         ])
@@ -164,6 +164,7 @@ service cloud.firestore {
         && data.summary is string && data.summary.size() <= 2000
         && (!('durationSeconds' in data) || data.durationSeconds == null || (data.durationSeconds is int && data.durationSeconds >= 0 && data.durationSeconds <= 86400))
         && (!('voiceSessionIds' in data) || isValidStringList(data.voiceSessionIds, 200, 128))
+        && (!('deleted' in data) || data.deleted is bool)
         && isOptionalBoundedString(data, 'deletedAt', 64)
         && data.revision is int && data.revision >= 1 && data.revision <= 10000000
         && isValidSyncStatus(data.syncStatus)
@@ -387,7 +388,7 @@ service cloud.firestore {
           && incoming().serverUpdatedAt == request.time
           && incoming().diff(existing()).affectedKeys().hasOnly([
             'title', 'kind', 'projectId', 'isPinned', 'summary',
-            'durationSeconds', 'voiceSessionIds', 'deletedAt',
+            'durationSeconds', 'voiceSessionIds', 'deleted', 'deletedAt',
             'revision', 'syncStatus', 'updatedAt', 'serverUpdatedAt'
           ]);
         allow delete: if isValidId(uid) && isValidId(conversationId) && isOwner(uid);

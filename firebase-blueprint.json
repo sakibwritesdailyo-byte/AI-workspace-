@@ -269,6 +269,10 @@
         "voiceSessionIds": {
           "type": "array"
         },
+        "deleted": {
+          "type": "boolean",
+          "description": "True while this conversation is soft-deleted and excluded from active history."
+        },
         "deletedAt": {
           "type": "string",
           "maxLength": 64
