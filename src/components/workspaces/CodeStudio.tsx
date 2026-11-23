@@ -178,8 +178,8 @@ export function CodeStudio({
     <div className="h-full flex flex-col overflow-hidden">
       {/* Sample Project Read-Only Banner */}
       {readOnly && (
-        <div className="px-4 py-2.5 bg-amber-500/10 border-b border-amber-500/25 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <span className="text-amber-200">
+        <div className="px-4 py-2.5 bg-surface border-b border-border flex flex-wrap items-center justify-between gap-2 text-xs">
+          <span className="text-muted">
             Viewing <strong>Sample Template (Read-Only Demo)</strong>. Clone to edit and persist
             in IndexedDB.
           </span>
@@ -187,7 +187,7 @@ export function CodeStudio({
             <button
               type="button"
               onClick={() => onCloneSampleProject(project.id)}
-              className="min-h-[34px] px-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#052317] font-semibold inline-flex items-center gap-1.5"
+              className="min-h-[34px] px-3 rounded-lg bg-signal hover:bg-signal/90 text-on-signal font-semibold inline-flex items-center gap-1.5"
             >
               <Copy className="w-3.5 h-3.5" />
               Clone to My Projects
@@ -199,41 +199,41 @@ export function CodeStudio({
       {storageError && (
         <div
           role="alert"
-          className="px-4 py-2 bg-rose-950/35 border-b border-rose-500/30 text-xs text-rose-200 flex items-center gap-2"
+          className="px-4 py-2 bg-raised border-b border-border text-xs text-signal flex items-center gap-2"
         >
-          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+          <AlertCircle className="w-4 h-4 text-signal shrink-0" />
           <span>{storageError}</span>
         </div>
       )}
 
       {/* Editor Header */}
-      <div className="px-4 py-2.5 border-b border-white/[0.08] bg-[#0D1015] flex flex-wrap items-center justify-between gap-3">
+      <div className="px-4 py-2.5 border-b border-border bg-surface flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="flex items-center gap-2 text-xs text-zinc-400">
-            <span className="font-medium text-zinc-200 truncate">{project.name}</span>
+          <div className="flex items-center gap-2 text-xs text-muted">
+            <span className="font-medium text-ink truncate">{project.name}</span>
             {activeFile && (
               <>
                 <span aria-hidden="true">/</span>
-                <span className="font-mono text-emerald-300 truncate">{activeFile.path}</span>
+                <span className="font-mono text-signal truncate">{activeFile.path}</span>
               </>
             )}
           </div>
-          <p className="text-xs text-zinc-400 mt-0.5 flex items-center gap-1.5">
+          <p className="text-xs text-muted mt-0.5 flex items-center gap-1.5">
             <span>CodeMirror 6</span>
             <span aria-hidden="true">·</span>
             {readOnly ? (
               <span>Read-only demo</span>
             ) : saveStatus === 'error' ? (
-              <span className="text-rose-300">IndexedDB save error</span>
+              <span className="text-signal">IndexedDB save error</span>
             ) : saveStatus === 'saving' ? (
-              <span className="text-emerald-300 inline-flex items-center gap-1">
+              <span className="text-signal inline-flex items-center gap-1">
                 <Loader2 className="w-3 h-3 animate-spin" />
                 Saving to IndexedDB…
               </span>
             ) : hasUnsavedChanges ? (
-              <span className="text-amber-300">Unsaved changes</span>
+              <span className="text-muted">Unsaved changes</span>
             ) : (
-              <span className="text-emerald-300 inline-flex items-center gap-1">
+              <span className="text-signal inline-flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3" />
                 {formatSavedTime(lastSavedAt)} in IndexedDB
               </span>
@@ -247,9 +247,9 @@ export function CodeStudio({
               type="button"
               onClick={onOpenFilesDrawer}
               aria-label="Browse project files and folders"
-              className="lg:hidden min-h-[38px] px-2.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-xs font-medium text-zinc-200 inline-flex items-center gap-1.5"
+              className="lg:hidden min-h-[38px] px-2.5 rounded-lg bg-raised hover:bg-sunken border border-border text-xs font-medium text-ink inline-flex items-center gap-1.5"
             >
-              <FolderTree className="w-3.5 h-3.5 text-emerald-400" />
+              <FolderTree className="w-3.5 h-3.5 text-signal" />
               <span>Files</span>
             </button>
           )}
@@ -261,8 +261,8 @@ export function CodeStudio({
               disabled={saveStatus === 'saving'}
               className={`min-h-[38px] px-3 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 border transition-colors ${
                 isDirty || hasUnsavedChanges
-                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/35 hover:bg-emerald-500/25'
-                  : 'bg-white/[0.04] text-zinc-200 border-white/[0.08] hover:bg-white/[0.08]'
+                  ? 'bg-signal/10 text-signal border-signal hover:bg-signal/15'
+                  : 'bg-raised text-ink border-border hover:bg-sunken'
               }`}
             >
               {saveStatus === 'saving' ? (
@@ -283,7 +283,7 @@ export function CodeStudio({
           <button
             type="button"
             onClick={onOpenPreview}
-            className="min-h-[38px] px-3.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#052317] text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
+            className="min-h-[38px] px-3.5 rounded-lg bg-signal hover:bg-signal/90 text-on-signal text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
           >
             <Eye className="w-3.5 h-3.5" />
             Preview
@@ -295,7 +295,7 @@ export function CodeStudio({
       <div
         role="tablist"
         aria-label="Open project files"
-        className="flex items-center gap-1 px-3 py-1.5 bg-[#0A0D11] border-b border-white/[0.08] overflow-x-auto"
+        className="flex items-center gap-1 px-3 py-1.5 bg-surface border-b border-border overflow-x-auto"
       >
         {openFiles.map((file) => {
           const selected = file.id === activeFile?.id;
@@ -305,8 +305,8 @@ export function CodeStudio({
               key={file.id}
               className={`inline-flex items-center rounded-lg border text-xs font-mono shrink-0 ${
                 selected
-                  ? 'bg-[#151A22] text-zinc-100 border-emerald-500/35'
-                  : 'bg-transparent text-zinc-400 border-transparent hover:bg-white/[0.04] hover:text-zinc-200'
+                  ? 'bg-sunken text-ink border-border'
+                  : 'bg-transparent text-muted border-transparent hover:bg-raised hover:text-ink'
               }`}
             >
               <button
@@ -316,16 +316,16 @@ export function CodeStudio({
                 onClick={() => onSelectFile(file.id)}
                 className="min-h-[34px] pl-2.5 pr-1.5 flex items-center gap-1.5"
               >
-                <FileCode2 className="w-3.5 h-3.5 text-emerald-400/80" />
+                <FileCode2 className="w-3.5 h-3.5 text-muted" />
                 <span>{file.name}</span>
-                {fileDirty && <span className="text-amber-300" aria-label="Unsaved">*</span>}
+                {fileDirty && <span className="text-muted" aria-label="Unsaved">*</span>}
               </button>
               {openFiles.length > 1 && (
                 <button
                   type="button"
                   onClick={() => onCloseTab(file.id)}
                   aria-label={`Close ${file.name}`}
-                  className="p-1.5 mr-0.5 rounded text-zinc-400 hover:text-zinc-200"
+                  className="p-1.5 mr-0.5 rounded text-muted hover:text-ink"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -336,7 +336,7 @@ export function CodeStudio({
       </div>
 
       {/* CodeMirror 6 Mount */}
-      <div className="flex-1 min-h-[180px] bg-[#090B0E] overflow-hidden">
+      <div className="flex-1 min-h-[180px] bg-sunken overflow-hidden">
         {activeFile ? (
           <div
             ref={editorContainerRef}
@@ -344,7 +344,7 @@ export function CodeStudio({
             className="w-full h-full min-h-[180px]"
           />
         ) : (
-          <div className="h-full flex items-center justify-center p-6 text-sm text-zinc-400">
+          <div className="h-full flex items-center justify-center p-6 text-sm text-muted">
             Select a file from the project explorer to inspect or edit.
           </div>
         )}
