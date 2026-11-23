@@ -294,3 +294,119 @@ test('reconcileCloudAndLocalWorkspace propagates clean remote tombstones and res
     'Charon',
   );
 });
+
+
+test('deleted local conversation wins by updatedAt without creating a conflict copy', () => {
+  const localConv = {
+    ...makeConversation('conv-delete-local', 'Deleted Chat', 3, '2026-02-02T14:00:00.000Z'),
+    deleted: true,
+    deletedAt: '2026-02-02T14:00:00.000Z',
+  };
+  const remoteConv = makeConversation('conv-delete-local', 'Older Cloud Chat', 2, '2026-02-02T13:00:00.000Z');
+  const outbox = [
+    buildOutboxRecord({
+      entityType: 'conversation',
+      entityId: localConv.id,
+      operation: 'upsert',
+      revision: 3,
+      baseRevision: 2,
+      ownerUid: 'uid-1',
+      updatedAt: localConv.updatedAt,
+      deletedAt: localConv.deletedAt,
+    }),
+  ];
+
+  const result = reconcileCloudAndLocalWorkspace({
+    ownerUid: 'uid-1',
+    localSnapshot: { ...emptyLocal(), deletedConversations: [localConv] },
+    localOutbox: outbox,
+    localTombstones: [],
+    remote: { ...emptyRemote(), conversations: [remoteConv] },
+  });
+
+  assert.equal(result.applyInput.conflictCopyConversations?.length ?? 0, 0);
+  assert.equal(result.applyInput.upsertConversations?.length ?? 0, 0);
+  assert.equal(result.applyInput.upsertDeletedConversations?.length ?? 0, 0);
+  assert.equal(result.applyInput.outboxAcks?.length ?? 0, 0);
+});
+
+test('newer remote conversation edit wins over an older local soft delete without a copy', () => {
+  const localConv = {
+    ...makeConversation('conv-delete-remote-wins', 'Locally Deleted', 2, '2026-02-02T13:00:00.000Z'),
+    deleted: true,
+    deletedAt: '2026-02-02T13:00:00.000Z',
+  };
+  const remoteConv = makeConversation(
+    'conv-delete-remote-wins',
+    'Newer Cloud Edit',
+    3,
+    '2026-02-02T14:00:00.000Z',
+  );
+  const outbox = [
+    buildOutboxRecord({
+      entityType: 'conversation',
+      entityId: localConv.id,
+      operation: 'upsert',
+      revision: 2,
+      baseRevision: 1,
+      ownerUid: 'uid-1',
+      updatedAt: localConv.updatedAt,
+      deletedAt: localConv.deletedAt,
+    }),
+  ];
+
+  const result = reconcileCloudAndLocalWorkspace({
+    ownerUid: 'uid-1',
+    localSnapshot: { ...emptyLocal(), deletedConversations: [localConv] },
+    localOutbox: outbox,
+    localTombstones: [],
+    remote: { ...emptyRemote(), conversations: [remoteConv] },
+  });
+
+  assert.equal(result.applyInput.upsertConversations?.[0].title, 'Newer Cloud Edit');
+  assert.equal(result.applyInput.conflictCopyConversations?.length ?? 0, 0);
+  assert.equal(result.applyInput.outboxAcks?.length, 1);
+});
+
+test('remote conversation tombstones delete local edits without creating restored copies', () => {
+  const localConv = makeConversation(
+    'conv-remote-tombstone',
+    'Offline Edit',
+    3,
+    '2026-02-02T15:00:00.000Z',
+  );
+  const tombstone: SyncTombstoneRecord = {
+    id: 'conversation:conv-remote-tombstone',
+    entityType: 'conversation',
+    entityId: localConv.id,
+    parentId: null,
+    deletedAt: '2026-02-02T14:00:00.000Z',
+    revision: 2,
+    ownerUid: 'uid-1',
+    syncStatus: 'synced',
+    acknowledgedAt: '2026-02-02T14:00:00.000Z',
+  };
+  const outbox = [
+    buildOutboxRecord({
+      entityType: 'conversation',
+      entityId: localConv.id,
+      operation: 'upsert',
+      revision: 3,
+      baseRevision: 1,
+      ownerUid: 'uid-1',
+      updatedAt: localConv.updatedAt,
+    }),
+  ];
+
+  const result = reconcileCloudAndLocalWorkspace({
+    ownerUid: 'uid-1',
+    localSnapshot: { ...emptyLocal(), conversations: [localConv] },
+    localOutbox: outbox,
+    localTombstones: [],
+    remote: { ...emptyRemote(), tombstones: [tombstone] },
+  });
+
+  assert.deepEqual(result.applyInput.deleteConversationIds, [localConv.id]);
+  assert.equal(result.applyInput.conflictCopyConversations?.length ?? 0, 0);
+  assert.equal(result.applyInput.outboxAcks?.length, 1);
+});

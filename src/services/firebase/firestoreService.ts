@@ -184,6 +184,7 @@ export function serializeConversationForFirestore(
           ? normalizeInt(conv.durationSeconds, 0, 86_400, 0)
           : null,
       voiceSessionIds,
+      deleted: Boolean(conv.deleted || conv.deletedAt),
       deletedAt: conv.deletedAt ? clampIso(conv.deletedAt, updatedAt) : null,
       revision: normalizeInt(conv.revision, 1, 10_000_000, 1),
       syncStatus: 'synced' as const,
@@ -201,6 +202,7 @@ export function serializeConversationForFirestore(
           ? normalizeInt(conv.durationSeconds, 0, 86_400, 0)
           : null,
       voiceSessionIds,
+      deleted: Boolean(conv.deleted || conv.deletedAt),
       deletedAt: conv.deletedAt ? clampIso(conv.deletedAt, updatedAt) : null,
       revision: normalizeInt(conv.revision, 1, 10_000_000, 1),
       syncStatus: 'synced' as const,
@@ -798,6 +800,7 @@ export const firestoreService = {
         projectId: typeof raw.projectId === 'string' ? raw.projectId : null,
         createdAt: String(raw.createdAt ?? ''),
         updatedAt: String(raw.updatedAt ?? ''),
+        deleted: raw.deleted === true || typeof raw.deletedAt === 'string',
         deletedAt: typeof raw.deletedAt === 'string' ? raw.deletedAt : undefined,
         revision: typeof raw.revision === 'number' ? raw.revision : 1,
         ownerUid: safeUid,

@@ -180,6 +180,8 @@ export interface Conversation {
   createdAt: string;
   updatedAt: string;
   isPinned: boolean;
+  /** True while this conversation is soft-deleted and must not appear in active history. */
+  deleted?: boolean;
   deletedAt?: string;
   revision?: number;
   ownerUid?: string | null;

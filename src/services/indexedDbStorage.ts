@@ -48,7 +48,7 @@ import {
 export type { PersistedPreferences, PersistedWorkspaceSnapshot } from './workspaceRepository';
 
 export const DB_NAME = 'personal_ai_studio_db';
-export const DB_VERSION = 4;
+export const DB_VERSION = 5;
 
 export const STORE_PROJECTS = 'projects';
 export const STORE_FILES = 'files';
@@ -91,6 +91,7 @@ interface StoredConversationRecord {
   projectId: string | null;
   createdAt: string;
   updatedAt: string;
+  deleted?: boolean;
   deletedAt?: string | null;
   revision: number;
   ownerUid: string | null;
@@ -300,6 +301,7 @@ function toStoredConversationRecord(conv: Conversation, nowIso: string): StoredC
     projectId: conv.projectId ?? null,
     createdAt: conv.createdAt || nowIso,
     updatedAt: conv.updatedAt || conv.createdAt || nowIso,
+    deleted: Boolean(conv.deleted || conv.deletedAt),
     deletedAt: conv.deletedAt ?? null,
     revision: normalizeRevision(conv.revision, 1),
     ownerUid: normalizeOwnerUid(conv.ownerUid),
@@ -905,6 +907,110 @@ function openDatabase(dbName = DB_NAME): Promise<IDBDatabase> {
           }
         };
       }
+
+      // One-time v4 -> v5 cleanup: purge generated conflict copies and explicitly deleted rows.
+      if (event.oldVersion < 5) {
+        const activeConversationsReq = convStore.getAll();
+        const deletedConversationsReq = deletedStore.getAll();
+        const allMessagesReq = msgStore.getAll();
+        let migrationReads = 0;
+
+        const finishConversationCleanup = () => {
+          migrationReads += 1;
+          if (migrationReads !== 3) return;
+
+          const activeRows = (activeConversationsReq.result as Array<Conversation>) ?? [];
+          const deletedRows = (deletedConversationsReq.result as Array<Conversation>) ?? [];
+          const messageRows = (allMessagesReq.result as Array<StoredMessageRecord>) ?? [];
+          const cleanupById = new Map<string, Conversation>();
+
+          for (const row of [...activeRows, ...deletedRows]) {
+            if (!row || typeof row.id !== 'string' || !row.id) continue;
+            const isConflictCopy =
+              typeof row.title === 'string' && row.title.toLowerCase().includes('(conflict copy)');
+            if (row.deleted === true || isConflictCopy) cleanupById.set(row.id, row);
+          }
+
+          for (const [conversationId, conversation] of cleanupById) {
+            convStore.delete(conversationId);
+            deletedStore.delete(conversationId);
+
+            const ownerUid = normalizeOwnerUid(conversation.ownerUid);
+            const baseRevision = normalizeRevision(conversation.revision, 1);
+            const revision = baseRevision + 1;
+            const parentId = conversation.projectId ?? null;
+            const linkedMessages = new Map<string, Partial<ChatMessage> & { id: string }>();
+
+            for (const message of conversation.messages ?? []) {
+              if (message && typeof message.id === 'string') linkedMessages.set(message.id, message);
+            }
+            for (const message of messageRows) {
+              if (message.conversationId === conversationId) linkedMessages.set(message.id, message);
+            }
+
+            for (const message of linkedMessages.values()) {
+              msgStore.delete(message.id);
+              const messageRevision = normalizeRevision(message.revision, 1);
+              const messageOwner = normalizeOwnerUid(message.ownerUid ?? ownerUid);
+              tombstoneStore.put({
+                id: createTombstoneId('message', message.id),
+                entityType: 'message',
+                entityId: message.id,
+                parentId: conversationId,
+                deletedAt: nowIso,
+                revision: messageRevision + 1,
+                ownerUid: messageOwner,
+                syncStatus: normalizeSyncStatus(message.syncStatus),
+                acknowledgedAt: null,
+              } satisfies SyncTombstoneRecord);
+              upsertOutboxInTx(
+                outboxStore,
+                buildOutboxRecord({
+                  entityType: 'message',
+                  entityId: message.id,
+                  parentId: conversationId,
+                  operation: 'delete',
+                  revision: messageRevision + 1,
+                  baseRevision: messageRevision,
+                  ownerUid: messageOwner,
+                  updatedAt: nowIso,
+                  deletedAt: nowIso,
+                }),
+              );
+            }
+
+            tombstoneStore.put({
+              id: createTombstoneId('conversation', conversationId),
+              entityType: 'conversation',
+              entityId: conversationId,
+              parentId,
+              deletedAt: nowIso,
+              revision,
+              ownerUid,
+              syncStatus: normalizeSyncStatus(conversation.syncStatus),
+              acknowledgedAt: null,
+            } satisfies SyncTombstoneRecord);
+            upsertOutboxInTx(
+              outboxStore,
+              buildOutboxRecord({
+                entityType: 'conversation',
+                entityId: conversationId,
+                parentId,
+                operation: 'delete',
+                revision,
+                baseRevision,
+                ownerUid,
+                updatedAt: nowIso,
+                deletedAt: nowIso,
+              }),
+            );
+          }
+        };
+
+        activeConversationsReq.onsuccess = finishConversationCleanup;
+        deletedConversationsReq.onsuccess = finishConversationCleanup;
+        allMessagesReq.onsuccess = finishConversationCleanup;
+      }
     };
 
     request.onsuccess = () => resolve(request.result);
@@ -1206,7 +1312,7 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
       }
 
       const conversations: Conversation[] = deduplicateById(convRows)
-        .filter((c) => !c.isSample && recordBelongsToOwner(c.ownerUid, scopeOwnerUid))
+        .filter((c) => !c.isSample && !c.deleted && !c.deletedAt && recordBelongsToOwner(c.ownerUid, scopeOwnerUid))
         .map((row) => {
           const normalizedMsgs = (messagesByConv.get(row.id) ?? [])
             .sort((a, b) => a.orderIndex - b.orderIndex)
@@ -1220,6 +1326,7 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
             projectId: row.projectId ?? null,
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,
+            deleted: false,
             deletedAt: row.deletedAt ?? undefined,
             revision: normalizeRevision(row.revision, 1),
             ownerUid: normalizeOwnerUid(row.ownerUid),
@@ -1237,6 +1344,7 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
         .filter((c) => !c.isSample && recordBelongsToOwner(c.ownerUid, scopeOwnerUid))
         .map((c) => ({
           ...c,
+          deleted: true,
           isSample: false,
           revision: normalizeRevision(c.revision, 1),
           ownerUid: normalizeOwnerUid(c.ownerUid),
@@ -1738,7 +1846,9 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
     const trashed: Conversation = {
       ...conversation,
       isSample: false,
-      deletedAt: conversation.deletedAt || nowIso,
+      deleted: true,
+      deletedAt: nowIso,
+      updatedAt: nowIso,
       revision: normalizeRevision(conversation.revision, 1),
       ownerUid,
       syncStatus: normalizeSyncStatus(conversation.syncStatus),
@@ -1792,9 +1902,10 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
     const ownerUid = normalizeOwnerUid(conversation.ownerUid);
     const restored: Conversation = {
       ...conversation,
+      deleted: false,
       deletedAt: undefined,
       isSample: false,
-      updatedAt: conversation.updatedAt || nowIso,
+      updatedAt: nowIso,
       revision: prevRev + 1,
       ownerUid,
       syncStatus: normalizeSyncStatus(conversation.syncStatus),
@@ -3478,7 +3589,7 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
             deletedStore.delete(conv.id);
             convStore.put(
               toStoredConversationRecord(
-                { ...conv, deletedAt: undefined, ownerUid: targetUid, syncStatus: 'synced' },
+                { ...conv, deleted: false, deletedAt: undefined, ownerUid: targetUid, syncStatus: 'synced' },
                 nowIso,
               ),
             );
@@ -3488,6 +3599,7 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
             convStore.delete(trashed.id);
             deletedStore.put({
               ...trashed,
+              deleted: true,
               isSample: false,
               deletedAt: trashed.deletedAt || nowIso,
               revision: normalizeRevision(trashed.revision, 1),
