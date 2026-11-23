@@ -703,7 +703,7 @@ export function reconcileCloudAndLocalWorkspace(input: {
   // --- 4. Reconcile Messages (for active conversations) ---
   for (const remoteEntry of remote.messages) {
     const parentRemoteConv = remoteConvMap.get(remoteEntry.conversationId);
-    if (parentRemoteConv?.deletedAt) {
+    if (parentRemoteConv?.deleted || parentRemoteConv?.deletedAt) {
       // Soft-deleted conversation messages belong inside upsertDeletedConversations, not active msgStore
       continue;
     }
