@@ -202,6 +202,7 @@ export function serializeConversationForFirestore(
           ? normalizeInt(conv.durationSeconds, 0, 86_400, 0)
           : null,
       voiceSessionIds,
+      deleted: Boolean(conv.deleted || conv.deletedAt),
       deletedAt: conv.deletedAt ? clampIso(conv.deletedAt, updatedAt) : null,
       revision: normalizeInt(conv.revision, 1, 10_000_000, 1),
       syncStatus: 'synced' as const,
