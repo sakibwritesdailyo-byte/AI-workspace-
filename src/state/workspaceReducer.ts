@@ -1478,6 +1478,7 @@ export function workspaceReducer(
         deletedConversations: [
           {
             ...target,
+            deleted: true,
             deletedAt: nowIso,
             updatedAt: nowIso,
             revision: (target.revision ?? 1) + 1,
@@ -1506,6 +1507,7 @@ export function workspaceReducer(
         conversations: [
           {
             ...restored,
+            deleted: false,
             updatedAt: nowIso,
             revision: (restored.revision ?? 1) + 1,
             ownerUid: restored.ownerUid ?? state.activeOwnerUid,
