@@ -703,14 +703,14 @@ export function ChatStudio({
                   key={msg.id}
                   className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
                 >
-                  <div className="flex flex-wrap items-center gap-2 mb-1 px-1 text-xs text-zinc-400">
+                  <div className="flex flex-wrap items-center gap-2 mb-1 px-1 text-xs text-muted">
                     <span
                       className={
                         isUser
-                          ? 'text-zinc-200 font-medium'
+                          ? 'text-ink font-medium'
                           : isSystem
-                            ? 'text-zinc-400 font-medium'
-                            : 'text-emerald-400 font-medium'
+                            ? 'text-muted font-medium'
+                            : 'text-signal font-medium'
                       }
                     >
                       {senderLabel}
@@ -718,7 +718,7 @@ export function ChatStudio({
                     {!isUser && msg.modelUsed && (
                       <>
                         <span aria-hidden="true">·</span>
-                        <span className="font-mono text-[11px] text-zinc-400">
+                        <span className="font-mono text-[11px] text-muted">
                           {msg.modelUsed}
                           {msg.fallbackUsed ? ' (fallback)' : ''}
                         </span>
@@ -735,18 +735,18 @@ export function ChatStudio({
                     {msg.stopped && (
                       <>
                         <span aria-hidden="true">·</span>
-                        <span className="text-amber-300">Stopped early</span>
+                        <span className="text-muted">Stopped early</span>
                       </>
                     )}
                   </div>
 
                   <div
-                    className={`max-w-[92%] sm:max-w-[82%] rounded-2xl px-4 py-3 text-[14px] leading-relaxed ${
+                    className={`max-w-[92%] sm:max-w-[82%] rounded-2xl px-4 py-3 text-[14px] leading-relaxed [&_.my-2\\.5]:!bg-sunken [&_.my-2\\.5>div]:!bg-raised [&_.my-2\\.5_pre]:!bg-sunken [&_.my-2\\.5_pre]:!font-mono ${
                       isUser
-                        ? 'bg-[#151C24] text-zinc-100'
+                        ? 'bg-raised text-ink border border-border'
                         : isSystem
-                          ? 'bg-[#0D1117] text-zinc-300 border border-white/[0.1] italic'
-                          : 'bg-transparent text-zinc-200 border border-white/[0.08]'
+                          ? 'bg-sunken text-muted border border-border italic'
+                          : 'bg-surface text-ink border border-border'
                     }`}
                   >
                     {isUser ? (
@@ -756,16 +756,16 @@ export function ChatStudio({
                     )}
 
                     {!isUser && (
-                      <div className="mt-2.5 pt-2 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-3">
+                      <div className="mt-2.5 pt-2 border-t border-border flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                           <button
                             type="button"
                             onClick={() => handleCopy(msg.id, msg.content)}
-                            className="min-h-[32px] inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-emerald-300 transition-colors"
+                            className="min-h-[32px] inline-flex items-center gap-1.5 text-xs text-muted hover:text-signal transition-colors"
                           >
                             {copiedId === msg.id ? (
                               <>
-                                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                                <Check className="w-3.5 h-3.5 text-signal" />
                                 <span>Copied</span>
                               </>
                             ) : (
@@ -781,7 +781,7 @@ export function ChatStudio({
                               type="button"
                               onClick={onRegenerateLastResponse}
                               aria-label="Regenerate response"
-                              className="min-h-[32px] inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-emerald-300 transition-colors"
+                              className="min-h-[32px] inline-flex items-center gap-1.5 text-xs text-muted hover:text-signal transition-colors"
                             >
                               <RotateCcw className="w-3.5 h-3.5" />
                               <span>Regenerate</span>
@@ -792,7 +792,7 @@ export function ChatStudio({
                         {msg.usage &&
                           (typeof msg.usage.promptTokens === 'number' ||
                             typeof msg.usage.outputTokens === 'number') && (
-                            <span className="text-[11px] font-mono tabular-nums text-zinc-400">
+                            <span className="text-[11px] font-mono tabular-nums text-muted">
                               {msg.usage.promptTokens ?? 0} in · {msg.usage.outputTokens ?? 0} out
                             </span>
                           )}
@@ -809,8 +809,8 @@ export function ChatStudio({
                 aria-label="Streaming Gemini response"
                 className="flex flex-col items-start"
               >
-                <div className="flex items-center gap-2 mb-1 px-1 text-xs text-zinc-400">
-                  <span className="text-emerald-400 font-medium">Gemini</span>
+                <div className="flex items-center gap-2 mb-1 px-1 text-xs text-muted">
+                  <span className="text-signal font-medium">Gemini</span>
                   {activeStreaming.modelUsed && (
                     <>
                       <span aria-hidden="true">·</span>
@@ -821,17 +821,17 @@ export function ChatStudio({
                     </>
                   )}
                   <span aria-hidden="true">·</span>
-                  <span className="inline-flex items-center gap-1 text-emerald-300">
+                  <span className="inline-flex items-center gap-1 text-signal">
                     <Loader2 className="w-3 h-3 animate-spin" />
                     <span>{activeStreaming.text ? 'Streaming…' : 'Thinking…'}</span>
                   </span>
                 </div>
 
-                <div className="max-w-[92%] sm:max-w-[82%] rounded-2xl px-4 py-3 border border-emerald-500/25 bg-[#0D1218]/80">
+                <div className="max-w-[92%] sm:max-w-[82%] rounded-2xl px-4 py-3 border border-border bg-surface">
                   {activeStreaming.text ? (
                     <MarkdownMessage content={activeStreaming.text} streaming />
                   ) : (
-                    <p className="text-xs text-zinc-400">
+                    <p className="text-xs text-muted">
                       Connecting to Gemini ({modelSettings.chatModel})…
                     </p>
                   )}
