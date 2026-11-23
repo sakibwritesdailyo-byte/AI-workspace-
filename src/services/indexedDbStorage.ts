@@ -48,7 +48,7 @@ import {
 export type { PersistedPreferences, PersistedWorkspaceSnapshot } from './workspaceRepository';
 
 export const DB_NAME = 'personal_ai_studio_db';
-export const DB_VERSION = 4;
+export const DB_VERSION = 5;
 
 export const STORE_PROJECTS = 'projects';
 export const STORE_FILES = 'files';
@@ -91,6 +91,7 @@ interface StoredConversationRecord {
   projectId: string | null;
   createdAt: string;
   updatedAt: string;
+  deleted?: boolean;
   deletedAt?: string | null;
   revision: number;
   ownerUid: string | null;
@@ -300,6 +301,7 @@ function toStoredConversationRecord(conv: Conversation, nowIso: string): StoredC
     projectId: conv.projectId ?? null,
     createdAt: conv.createdAt || nowIso,
     updatedAt: conv.updatedAt || conv.createdAt || nowIso,
+    deleted: Boolean(conv.deleted || conv.deletedAt),
     deletedAt: conv.deletedAt ?? null,
     revision: normalizeRevision(conv.revision, 1),
     ownerUid: normalizeOwnerUid(conv.ownerUid),
@@ -1206,7 +1208,7 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
       }
 
       const conversations: Conversation[] = deduplicateById(convRows)
-        .filter((c) => !c.isSample && recordBelongsToOwner(c.ownerUid, scopeOwnerUid))
+        .filter((c) => !c.isSample && !c.deleted && !c.deletedAt && recordBelongsToOwner(c.ownerUid, scopeOwnerUid))
         .map((row) => {
           const normalizedMsgs = (messagesByConv.get(row.id) ?? [])
             .sort((a, b) => a.orderIndex - b.orderIndex)
@@ -1220,6 +1222,7 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
             projectId: row.projectId ?? null,
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,
+            deleted: false,
             deletedAt: row.deletedAt ?? undefined,
             revision: normalizeRevision(row.revision, 1),
             ownerUid: normalizeOwnerUid(row.ownerUid),
@@ -1738,7 +1741,9 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
     const trashed: Conversation = {
       ...conversation,
       isSample: false,
-      deletedAt: conversation.deletedAt || nowIso,
+      deleted: true,
+      deletedAt: nowIso,
+      updatedAt: nowIso,
       revision: normalizeRevision(conversation.revision, 1),
       ownerUid,
       syncStatus: normalizeSyncStatus(conversation.syncStatus),
@@ -1792,9 +1797,10 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
     const ownerUid = normalizeOwnerUid(conversation.ownerUid);
     const restored: Conversation = {
       ...conversation,
+      deleted: false,
       deletedAt: undefined,
       isSample: false,
-      updatedAt: conversation.updatedAt || nowIso,
+      updatedAt: nowIso,
       revision: prevRev + 1,
       ownerUid,
       syncStatus: normalizeSyncStatus(conversation.syncStatus),
