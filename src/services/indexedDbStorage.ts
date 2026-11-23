@@ -3589,7 +3589,7 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
             deletedStore.delete(conv.id);
             convStore.put(
               toStoredConversationRecord(
-                { ...conv, deletedAt: undefined, ownerUid: targetUid, syncStatus: 'synced' },
+                { ...conv, deleted: false, deletedAt: undefined, ownerUid: targetUid, syncStatus: 'synced' },
                 nowIso,
               ),
             );
@@ -3599,6 +3599,7 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
             convStore.delete(trashed.id);
             deletedStore.put({
               ...trashed,
+              deleted: true,
               isSample: false,
               deletedAt: trashed.deletedAt || nowIso,
               revision: normalizeRevision(trashed.revision, 1),
