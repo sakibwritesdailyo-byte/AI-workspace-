@@ -868,7 +868,7 @@ export function ProjectsWorkspace({
                                     <button
                                       type="button"
                                       onClick={() => onSelectFile(file.id, true)}
-                                      className={`min-h-[40px] px-2 rounded-lg text-xs font-mono inline-flex items-center gap-2 truncate transition-colors ${ activeFile?.id === file.id ? 'bg-signal/10 text-signal' : 'text-muted hover:text-ink' }`
+                                      className={`min-h-[40px] px-2 rounded-lg text-xs font-mono inline-flex items-center gap-2 truncate transition-colors ${ activeFile?.id === file.id ? 'bg-signal/10 text-signal' : 'text-muted hover:text-ink' }`}
                                     >
                                       <FileCode2 className="w-3.5 h-3.5 text-signal/80 shrink-0" />
                                       <span className="truncate">{file.name}</span>
