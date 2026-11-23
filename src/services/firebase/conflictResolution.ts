@@ -550,9 +550,10 @@ export function reconcileCloudAndLocalWorkspace(input: {
       .map((m) => ({ ...m.message, ownerUid, syncStatus: 'synced' as const }));
 
     const pushRemoteConv = (conv: Conversation) => {
-      if (conv.deletedAt) {
+      if (conv.deleted || conv.deletedAt) {
         upsertDeletedConversations.push({
           ...conv,
+          deleted: true,
           ownerUid,
           syncStatus: 'synced',
           messages: attachedRemoteMsgs.length > 0 ? attachedRemoteMsgs : conv.messages ?? [],
@@ -560,6 +561,7 @@ export function reconcileCloudAndLocalWorkspace(input: {
       } else {
         upsertConversations.push({
           ...conv,
+          deleted: false,
           deletedAt: undefined,
           ownerUid,
           syncStatus: 'synced',
@@ -568,29 +570,29 @@ export function reconcileCloudAndLocalWorkspace(input: {
     };
 
     if (outbox?.operation === 'delete') {
-      const baseRev = outbox.baseRevision ?? outbox.revision;
-      if ((remoteConv.revision ?? 1) > baseRev) {
+      // A permanent local delete wins unless the remote entity has a later timestamp.
+      if (pickNewerTimestamp(remoteConv.updatedAt, outbox.updatedAt) > 0) {
         pushRemoteConv(remoteConv);
         outboxAcks.push({ id: outbox.id, operationId: outbox.operationId });
-        conflicts.push({
-          id: `conflict-conv-${remoteConv.id}-${nowIso}`,
-          entityType: 'conversation',
-          entityId: remoteConv.id,
-          title: remoteConv.title,
-          reason: 'delete_vs_edit',
-          resolution: 'remote_kept',
-          localRevision: outbox.revision,
-          remoteRevision: remoteConv.revision ?? 1,
-          localUpdatedAt: outbox.updatedAt,
-          remoteUpdatedAt: remoteConv.updatedAt,
-          detectedAt: nowIso,
-        });
       }
       continue;
     }
 
     if (!localConv) {
       pushRemoteConv(remoteConv);
+      continue;
+    }
+
+    const localIsDeleted = Boolean(localConv.deleted || localConv.deletedAt);
+    const remoteIsDeleted = Boolean(remoteConv.deleted || remoteConv.deletedAt);
+    if (localIsDeleted || remoteIsDeleted) {
+      // Deletion state is reconciled by Last Write Wins; never fork a deleted conversation.
+      const timestampOrder = pickNewerTimestamp(localConv.updatedAt, remoteConv.updatedAt);
+      const localWins = timestampOrder > 0 || (timestampOrder === 0 && localIsDeleted);
+      if (!localWins) {
+        pushRemoteConv(remoteConv);
+        if (outbox) outboxAcks.push({ id: outbox.id, operationId: outbox.operationId });
+      }
       continue;
     }
 
@@ -684,55 +686,11 @@ export function reconcileCloudAndLocalWorkspace(input: {
       continue;
     }
 
-    const hasPendingMsgs = localConv.messages.some(
-      (m) => outboxByEntity.get(`message:${m.id}`)?.operation === 'upsert',
-    );
-    if (outbox?.operation === 'upsert' || hasPendingMsgs) {
-      const copyConvId = generateStableId('conv');
-      const copyConv: Conversation = {
-        ...localConv,
-        id: copyConvId,
-        title: `${localConv.title} (Restored Copy)`,
-        deletedAt: undefined,
-        revision: 1,
-        ownerUid,
-        syncStatus: 'pending',
-        updatedAt: nowIso,
-        messages: [],
-      };
-      conflictCopyConversations.push(copyConv);
-      localConv.messages.forEach((m, index) => {
-        const mOutbox = outboxByEntity.get(`message:${m.id}`);
-        if (mOutbox) outboxAcks.push({ id: mOutbox.id, operationId: mOutbox.operationId });
-        conflictCopyMessages.push({
-          conversationId: copyConvId,
-          orderIndex: index,
-          message: {
-            ...m,
-            id: generateStableId('msg'),
-            revision: 1,
-            ownerUid,
-            syncStatus: 'pending',
-            updatedAt: nowIso,
-          },
-        });
-      });
-      if (outbox) outboxAcks.push({ id: outbox.id, operationId: outbox.operationId });
-      conflicts.push({
-        id: `conflict-conv-del-${tomb.entityId}-${nowIso}`,
-        entityType: 'conversation',
-        entityId: tomb.entityId,
-        title: localConv.title,
-        reason: 'delete_vs_edit',
-        resolution: 'preserved_both',
-        localRevision: localConv.revision ?? 1,
-        remoteRevision: tomb.revision,
-        localUpdatedAt: localConv.updatedAt,
-        remoteUpdatedAt: tomb.deletedAt,
-        preservedCopyId: copyConvId,
-        preservedCopyLabel: copyConv.title,
-        detectedAt: nowIso,
-      });
+    // A remote tombstone is authoritative: discard local state without making a restored copy.
+    if (outbox) outboxAcks.push({ id: outbox.id, operationId: outbox.operationId });
+    for (const message of localConv.messages) {
+      const messageOutbox = outboxByEntity.get(`message:${message.id}`);
+      if (messageOutbox) outboxAcks.push({ id: messageOutbox.id, operationId: messageOutbox.operationId });
     }
 
     deleteConversationIds.push(tomb.entityId);
