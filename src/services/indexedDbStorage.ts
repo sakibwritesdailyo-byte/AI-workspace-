@@ -927,7 +927,7 @@ function openDatabase(dbName = DB_NAME): Promise<IDBDatabase> {
           for (const row of [...activeRows, ...deletedRows]) {
             if (!row || typeof row.id !== 'string' || !row.id) continue;
             const isConflictCopy =
-              typeof row.title === 'string' && /\\(Conflict Copy\\)/i.test(row.title);
+              typeof row.title === 'string' && row.title.toLowerCase().includes('(conflict copy)');
             if (row.deleted === true || isConflictCopy) cleanupById.set(row.id, row);
           }
 
@@ -1344,6 +1344,7 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
         .filter((c) => !c.isSample && recordBelongsToOwner(c.ownerUid, scopeOwnerUid))
         .map((c) => ({
           ...c,
+          deleted: true,
           isSample: false,
           revision: normalizeRevision(c.revision, 1),
           ownerUid: normalizeOwnerUid(c.ownerUid),
