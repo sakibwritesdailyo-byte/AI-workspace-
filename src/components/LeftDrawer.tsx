@@ -206,15 +206,15 @@ export function LeftDrawer({
   };
 
   const drawerContent = (
-    <div className="flex flex-col h-full bg-[#0B0E13] text-zinc-200 select-none">
+    <div className="flex flex-col h-full bg-sunken text-ink select-none">
       {/* Mobile Drawer Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.07] lg:hidden">
-        <span className="text-sm font-semibold text-zinc-100">Threads & Projects</span>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border lg:hidden">
+        <span className="text-sm font-semibold text-ink">Threads & Projects</span>
         <button
           type="button"
           onClick={onCloseMobile}
           aria-label="Close drawer"
-          className="min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded-lg text-zinc-300 hover:text-zinc-100 hover:bg-white/[0.06]"
+          className="min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded-lg text-muted hover:text-ink hover:bg-raised"
         >
           <X className="w-4 h-4" />
         </button>
@@ -224,7 +224,7 @@ export function LeftDrawer({
         {/* Recent Conversations */}
         <div>
           <div className="px-2 mb-2 flex items-center justify-between">
-            <p className="text-xs font-medium text-zinc-400">Recent Conversations</p>
+            <p className="text-xs font-medium text-muted">Recent Conversations</p>
             <button
               type="button"
               onClick={() => {
@@ -232,14 +232,14 @@ export function LeftDrawer({
                 onCloseMobile();
               }}
               aria-label="Create new conversation"
-              className="min-h-[32px] min-w-[32px] inline-flex items-center justify-center rounded-md text-zinc-300 hover:text-emerald-300 hover:bg-white/[0.06]"
+              className="min-h-[32px] min-w-[32px] inline-flex items-center justify-center rounded-md text-muted hover:text-signal hover:bg-raised"
             >
               <Plus className="w-4 h-4" />
             </button>
           </div>
 
           {recentConversations.length === 0 ? (
-            <p className="px-2 py-2 text-xs text-zinc-400">
+            <p className="px-2 py-2 text-xs text-muted">
               No saved conversations yet. Start a chat to save locally.
             </p>
           ) : (
@@ -256,8 +256,8 @@ export function LeftDrawer({
                     }}
                     className={`w-full min-h-[38px] px-2.5 py-1.5 rounded-lg flex items-center gap-2 text-left text-[13px] transition-colors ${
                       selected
-                        ? 'bg-emerald-500/12 text-emerald-300'
-                        : 'text-zinc-300 hover:text-zinc-100 hover:bg-white/[0.05]'
+                        ? 'bg-signal/10 text-signal'
+                        : 'text-muted hover:text-ink hover:bg-raised'
                     }`}
                   >
                     {conv.kind === 'voice' ? (
@@ -267,7 +267,7 @@ export function LeftDrawer({
                     )}
                     <span className="flex-1 truncate">{conv.title}</span>
                     {conv.isPinned && (
-                      <Pin className="w-3 h-3 text-emerald-400 shrink-0" aria-label="Pinned" />
+                      <Pin className="w-3 h-3 text-signal shrink-0" aria-label="Pinned" />
                     )}
                   </button>
                 );
@@ -276,17 +276,17 @@ export function LeftDrawer({
           )}
         </div>
 
-        <hr className="border-white/[0.06]" />
+        <hr className="border-border" />
 
         {/* Your Projects */}
         <div>
           <div className="px-2 mb-2 flex items-center justify-between">
-            <p className="text-xs font-medium text-zinc-400">Your Projects</p>
+            <p className="text-xs font-medium text-muted">Your Projects</p>
             <button
               type="button"
               onClick={() => setCreatingProject((prev) => !prev)}
               aria-label="Create new project"
-              className="min-h-[32px] min-w-[32px] inline-flex items-center justify-center rounded-md text-zinc-300 hover:text-emerald-300 hover:bg-white/[0.06]"
+              className="min-h-[32px] min-w-[32px] inline-flex items-center justify-center rounded-md text-muted hover:text-signal hover:bg-raised"
             >
               <FolderPlus className="w-4 h-4" />
             </button>
@@ -300,19 +300,19 @@ export function LeftDrawer({
                 onChange={(e) => setNewProjectName(e.target.value)}
                 placeholder="Project name..."
                 aria-label="New project name"
-                className="w-full h-9 px-2.5 rounded-lg bg-[#090B0E] border border-white/15 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500"
+                className="w-full h-9 px-2.5 rounded-lg bg-raised border border-border text-xs text-ink placeholder:text-muted focus:outline-none focus:border-signal"
               />
               <div className="flex items-center gap-1.5">
                 <button
                   type="submit"
-                  className="flex-1 h-8 rounded-md bg-emerald-500 text-[#052317] text-xs font-semibold hover:bg-emerald-400"
+                  className="flex-1 h-8 rounded-md bg-signal text-on-signal text-xs font-semibold hover:bg-signal/90"
                 >
                   Create
                 </button>
                 <button
                   type="button"
                   onClick={() => setCreatingProject(false)}
-                  className="h-8 px-2.5 rounded-md bg-white/[0.06] text-xs text-zinc-300 hover:bg-white/[0.1]"
+                  className="h-8 px-2.5 rounded-md bg-raised text-xs text-muted hover:bg-raised"
                 >
                   Cancel
                 </button>
@@ -321,7 +321,7 @@ export function LeftDrawer({
           )}
 
           {projects.length === 0 ? (
-            <p className="px-2 py-1.5 text-xs text-zinc-400">
+            <p className="px-2 py-1.5 text-xs text-muted">
               No personal projects yet. Create one or clone a sample template below.
             </p>
           ) : (
@@ -343,13 +343,13 @@ export function LeftDrawer({
                         value={projectRenameDraft}
                         onChange={(e) => setProjectRenameDraft(e.target.value)}
                         aria-label={`Rename ${project.name}`}
-                        className="flex-1 min-w-0 h-8 px-2 rounded bg-[#090B0E] border border-emerald-500/60 text-xs text-zinc-100"
+                        className="flex-1 min-w-0 h-8 px-2 rounded bg-raised border border-signal text-xs text-ink"
                         autoFocus
                       />
                       <button
                         type="submit"
                         aria-label="Save project name"
-                        className="h-8 w-8 inline-flex items-center justify-center rounded bg-emerald-500 text-[#052317]"
+                        className="h-8 w-8 inline-flex items-center justify-center rounded bg-signal text-on-signal"
                       >
                         <Check className="w-3.5 h-3.5" />
                       </button>
@@ -362,8 +362,8 @@ export function LeftDrawer({
                     key={project.id}
                     className={`group flex items-center justify-between rounded-lg pr-1 transition-colors ${
                       selected
-                        ? 'bg-white/[0.08] text-zinc-100'
-                        : 'text-zinc-300 hover:text-zinc-100 hover:bg-white/[0.04]'
+                        ? 'bg-signal/10 text-ink'
+                        : 'text-muted hover:text-ink hover:bg-raised'
                     }`}
                   >
                     <button
@@ -375,13 +375,13 @@ export function LeftDrawer({
                       className="flex-1 min-w-0 min-h-[40px] px-2.5 py-2 text-left"
                     >
                       <div className="text-[13px] font-medium truncate">{project.name}</div>
-                      <div className="text-xs text-zinc-400 truncate mt-0.5">
+                      <div className="text-xs text-muted truncate mt-0.5">
                         {project.files.length === 1 ? '1 file' : `${project.files.length} files`} ·{' '}
                         {project.framework}
                       </div>
                     </button>
 
-                    <div className="flex items-center opacity-80 lg:opacity-0 lg:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                    <div className="flex items-center opacity-80 lg:opacity-0 lg:group-hover:opacity-100 focus-within:opacity-100">
                       <button
                         type="button"
                         onClick={() => {
@@ -389,7 +389,7 @@ export function LeftDrawer({
                           setProjectRenameDraft(project.name);
                         }}
                         aria-label={`Rename project ${project.name}`}
-                        className="min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded text-zinc-400 hover:text-zinc-100"
+                        className="min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded text-muted hover:text-ink"
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
@@ -397,7 +397,7 @@ export function LeftDrawer({
                         type="button"
                         onClick={() => onDuplicateProject(project.id)}
                         aria-label={`Duplicate project ${project.name}`}
-                        className="min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded text-zinc-400 hover:text-emerald-300"
+                        className="min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded text-muted hover:text-signal"
                       >
                         <Copy className="w-3.5 h-3.5" />
                       </button>
@@ -405,7 +405,7 @@ export function LeftDrawer({
                         type="button"
                         onClick={() => onRequestDeleteProject(project)}
                         aria-label={`Delete project ${project.name}`}
-                        className="min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded text-zinc-400 hover:text-rose-300"
+                        className="min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded text-muted hover:text-signal"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -421,7 +421,7 @@ export function LeftDrawer({
         {activeProject && !activeProject.isSample && (
           <div>
             <div className="px-2 mb-2 flex items-center justify-between gap-1">
-              <p className="text-xs font-medium text-zinc-400 truncate">
+              <p className="text-xs font-medium text-muted truncate">
                 Files · {activeProject.name}
               </p>
               <div className="flex items-center gap-0.5 shrink-0">
@@ -433,7 +433,7 @@ export function LeftDrawer({
                     setTreeValidationError(null);
                   }}
                   aria-label="Create new folder in active project"
-                  className="min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded-md text-zinc-300 hover:text-emerald-300 hover:bg-white/[0.06]"
+                  className="min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded-md text-muted hover:text-signal hover:bg-raised"
                 >
                   <FolderPlus className="w-4 h-4" />
                 </button>
@@ -445,7 +445,7 @@ export function LeftDrawer({
                     setTreeValidationError(null);
                   }}
                   aria-label="Create new file in active project"
-                  className="min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded-md text-zinc-300 hover:text-emerald-300 hover:bg-white/[0.06]"
+                  className="min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded-md text-muted hover:text-signal hover:bg-raised"
                 >
                   <FilePlus2 className="w-4 h-4" />
                 </button>
@@ -455,7 +455,7 @@ export function LeftDrawer({
             {treeValidationError && (
               <div
                 role="alert"
-                className="mb-2 mx-1 rounded-lg border border-rose-500/35 bg-rose-950/30 px-2.5 py-2 text-xs text-rose-200"
+                className="mb-2 mx-1 rounded-lg border border-signal/35 bg-signal/10 px-2.5 py-2 text-xs text-signal"
               >
                 {treeValidationError}
               </div>
@@ -472,13 +472,13 @@ export function LeftDrawer({
                   }}
                   placeholder="src/components"
                   aria-label="New folder path"
-                  className="w-full h-9 px-2.5 rounded-lg bg-[#090B0E] border border-white/15 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500"
+                  className="w-full h-9 px-2.5 rounded-lg bg-raised border border-border text-xs text-ink placeholder:text-muted focus:outline-none focus:border-signal"
                   autoFocus
                 />
                 <div className="flex items-center gap-1.5">
                   <button
                     type="submit"
-                    className="flex-1 h-8 rounded-md bg-emerald-500 text-[#052317] text-xs font-semibold hover:bg-emerald-400"
+                    className="flex-1 h-8 rounded-md bg-signal text-on-signal text-xs font-semibold hover:bg-signal/90"
                   >
                     Add Folder
                   </button>
@@ -488,7 +488,7 @@ export function LeftDrawer({
                       setCreatingFolder(false);
                       setTreeValidationError(null);
                     }}
-                    className="h-8 px-2.5 rounded-md bg-white/[0.06] text-xs text-zinc-300 hover:bg-white/[0.1]"
+                    className="h-8 px-2.5 rounded-md bg-raised text-xs text-muted hover:bg-raised"
                   >
                     Cancel
                   </button>
@@ -508,7 +508,7 @@ export function LeftDrawer({
                     }}
                     placeholder="src/utils"
                     aria-label="Folder path"
-                    className="w-24 h-9 px-2 rounded-lg bg-[#090B0E] border border-white/15 text-xs text-zinc-100 focus:outline-none focus:border-emerald-500"
+                    className="w-24 h-9 px-2 rounded-lg bg-raised border border-border text-xs text-ink focus:outline-none focus:border-signal"
                   />
                   <input
                     type="text"
@@ -519,13 +519,13 @@ export function LeftDrawer({
                     }}
                     placeholder="notes.ts"
                     aria-label="New file name"
-                    className="flex-1 min-w-0 h-9 px-2.5 rounded-lg bg-[#090B0E] border border-white/15 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500"
+                    className="flex-1 min-w-0 h-9 px-2.5 rounded-lg bg-raised border border-border text-xs text-ink placeholder:text-muted focus:outline-none focus:border-signal"
                   />
                 </div>
                 <div className="flex items-center gap-1.5">
                   <button
                     type="submit"
-                    className="flex-1 h-8 rounded-md bg-emerald-500 text-[#052317] text-xs font-semibold hover:bg-emerald-400"
+                    className="flex-1 h-8 rounded-md bg-signal text-on-signal text-xs font-semibold hover:bg-signal/90"
                   >
                     Add File
                   </button>
@@ -535,7 +535,7 @@ export function LeftDrawer({
                       setCreatingFile(false);
                       setTreeValidationError(null);
                     }}
-                    className="h-8 px-2.5 rounded-md bg-white/[0.06] text-xs text-zinc-300 hover:bg-white/[0.1]"
+                    className="h-8 px-2.5 rounded-md bg-raised text-xs text-muted hover:bg-raised"
                   >
                     Cancel
                   </button>
@@ -566,39 +566,39 @@ export function LeftDrawer({
                           value={folderRenameDraft}
                           onChange={(e) => setFolderRenameDraft(e.target.value)}
                           aria-label={`Rename folder ${folder}`}
-                          className="flex-1 min-w-0 h-8 px-2 rounded bg-[#090B0E] border border-emerald-500/60 text-xs text-zinc-100"
+                          className="flex-1 min-w-0 h-8 px-2 rounded bg-raised border border-signal text-xs text-ink"
                           autoFocus
                         />
                         <button
                           type="submit"
                           aria-label="Save folder name"
-                          className="h-8 px-2 rounded bg-emerald-500 text-[#052317] text-xs font-semibold"
+                          className="h-8 px-2 rounded bg-signal text-on-signal text-xs font-semibold"
                         >
                           Save
                         </button>
                       </form>
                     ) : (
-                      <div className="group flex items-center justify-between rounded-md pr-1 hover:bg-white/[0.04]">
+                      <div className="group flex items-center justify-between rounded-md pr-1 hover:bg-raised">
                         <button
                           type="button"
                           onClick={() => onToggleFolder(folder)}
                           aria-expanded={isOpen}
-                          className="flex-1 min-w-0 min-h-[36px] px-2 py-1.5 flex items-center gap-2 text-xs font-medium text-zinc-300"
+                          className="flex-1 min-w-0 min-h-[36px] px-2 py-1.5 flex items-center gap-2 text-xs font-medium text-muted"
                         >
                           {isOpen ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                            <ChevronDown className="w-3.5 h-3.5 text-muted shrink-0" />
                           ) : (
-                            <ChevronRight className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                            <ChevronRight className="w-3.5 h-3.5 text-muted shrink-0" />
                           )}
                           {isOpen ? (
-                            <FolderOpen className="w-3.5 h-3.5 text-emerald-400/80 shrink-0" />
+                            <FolderOpen className="w-3.5 h-3.5 text-signal/80 shrink-0" />
                           ) : (
-                            <Folder className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                            <Folder className="w-3.5 h-3.5 text-muted shrink-0" />
                           )}
                           <span className="truncate">{folder}</span>
                         </button>
 
-                        <div className="flex items-center opacity-80 lg:opacity-0 lg:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                        <div className="flex items-center opacity-80 lg:opacity-0 lg:group-hover:opacity-100 focus-within:opacity-100">
                           <button
                             type="button"
                             onClick={() => {
@@ -607,7 +607,7 @@ export function LeftDrawer({
                               setTreeValidationError(null);
                             }}
                             aria-label={`Rename folder ${folder}`}
-                            className="min-h-[34px] min-w-[34px] inline-flex items-center justify-center rounded text-zinc-400 hover:text-zinc-100"
+                            className="min-h-[34px] min-w-[34px] inline-flex items-center justify-center rounded text-muted hover:text-ink"
                           >
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
@@ -625,7 +625,7 @@ export function LeftDrawer({
                                 ? `Delete folder ${folder}`
                                 : 'Keep at least 1 file in project'
                             }
-                            className="min-h-[34px] min-w-[34px] inline-flex items-center justify-center rounded text-zinc-400 hover:text-rose-300 disabled:opacity-35 disabled:pointer-events-none"
+                            className="min-h-[34px] min-w-[34px] inline-flex items-center justify-center rounded text-muted hover:text-signal disabled:opacity-35 disabled:pointer-events-none"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -634,9 +634,9 @@ export function LeftDrawer({
                     )}
 
                     {isOpen && (
-                      <div className="mt-0.5 ml-3 pl-2.5 border-l border-white/[0.08] space-y-0.5">
+                      <div className="mt-0.5 ml-3 pl-2.5 border-l border-border space-y-0.5">
                         {folderFiles.length === 0 ? (
-                          <p className="px-2 py-1 text-xs text-zinc-500 italic">Empty folder</p>
+                          <p className="px-2 py-1 text-xs text-muted italic">Empty folder</p>
                         ) : (
                           folderFiles.map((file) => {
                             const isSelected = file.id === activeFileId;
@@ -657,12 +657,12 @@ export function LeftDrawer({
                                       setTreeValidationError(null);
                                     }}
                                     aria-label={`Rename ${file.name}`}
-                                    className="flex-1 min-w-0 h-8 px-2 rounded bg-[#090B0E] border border-emerald-500/60 text-xs text-zinc-100"
+                                    className="flex-1 min-w-0 h-8 px-2 rounded bg-raised border border-signal text-xs text-ink"
                                     autoFocus
                                   />
                                   <button
                                     type="submit"
-                                    className="h-8 px-2 rounded bg-emerald-500 text-[#052317] text-xs font-semibold"
+                                    className="h-8 px-2 rounded bg-signal text-on-signal text-xs font-semibold"
                                   >
                                     Save
                                   </button>
@@ -672,7 +672,7 @@ export function LeftDrawer({
                                       setRenamingFileId(null);
                                       setTreeValidationError(null);
                                     }}
-                                    className="h-8 px-2 rounded text-xs text-zinc-300"
+                                    className="h-8 px-2 rounded text-xs text-muted"
                                   >
                                     Cancel
                                   </button>
@@ -685,8 +685,8 @@ export function LeftDrawer({
                                 key={file.id}
                                 className={`group flex items-center justify-between rounded-md pr-1 ${
                                   isSelected
-                                    ? 'bg-emerald-500/12 text-emerald-300'
-                                    : 'hover:bg-white/[0.04]'
+                                    ? 'bg-signal/10 text-signal'
+                                    : 'hover:bg-raised'
                                 }`}
                               >
                                 <button
@@ -701,7 +701,7 @@ export function LeftDrawer({
                                   <span className="truncate">{file.name}</span>
                                 </button>
 
-                                <div className="flex items-center opacity-80 lg:opacity-0 lg:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                                <div className="flex items-center opacity-80 lg:opacity-0 lg:group-hover:opacity-100 focus-within:opacity-100">
                                   <button
                                     type="button"
                                     onClick={() => {
@@ -710,7 +710,7 @@ export function LeftDrawer({
                                       setTreeValidationError(null);
                                     }}
                                     aria-label={`Rename ${file.name}`}
-                                    className="min-h-[34px] min-w-[34px] inline-flex items-center justify-center rounded text-zinc-400 hover:text-zinc-100"
+                                    className="min-h-[34px] min-w-[34px] inline-flex items-center justify-center rounded text-muted hover:text-ink"
                                   >
                                     <Pencil className="w-3.5 h-3.5" />
                                   </button>
@@ -719,7 +719,7 @@ export function LeftDrawer({
                                       type="button"
                                       onClick={() => onRequestDeleteFile(file)}
                                       aria-label={`Delete ${file.name}`}
-                                      className="min-h-[34px] min-w-[34px] inline-flex items-center justify-center rounded text-zinc-400 hover:text-rose-300"
+                                      className="min-h-[34px] min-w-[34px] inline-flex items-center justify-center rounded text-muted hover:text-signal"
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
                                     </button>
@@ -738,11 +738,11 @@ export function LeftDrawer({
           </div>
         )}
 
-        <hr className="border-white/[0.06]" />
+        <hr className="border-border" />
 
         {/* Clearly separated Sample Templates */}
         <div>
-          <p className="px-2 mb-1.5 text-xs font-medium text-zinc-400">
+          <p className="px-2 mb-1.5 text-xs font-medium text-muted">
             Sample Templates (Demo)
           </p>
           <div className="space-y-1">
@@ -754,10 +754,10 @@ export function LeftDrawer({
                   onPreviewSampleProject(sample.id);
                   onCloseMobile();
                 }}
-                className="w-full min-h-[36px] px-2.5 py-1.5 rounded-lg text-left text-xs text-zinc-300 hover:text-zinc-100 hover:bg-white/[0.04] transition-colors"
+                className="w-full min-h-[36px] px-2.5 py-1.5 rounded-lg text-left text-xs text-muted hover:text-ink hover:bg-raised transition-colors"
               >
                 <div className="truncate font-medium">{sample.name}</div>
-                <div className="text-xs text-zinc-400">Demo reference · Read-only</div>
+                <div className="text-xs text-muted">Demo reference · Read-only</div>
               </button>
             ))}
           </div>
@@ -771,7 +771,7 @@ export function LeftDrawer({
       {desktopOpen && (
         <aside
           aria-label="Conversations and projects drawer"
-          className="hidden lg:block w-[272px] shrink-0 border-r border-white/[0.07] h-full overflow-hidden"
+          className="hidden lg:block w-[272px] shrink-0 border-r border-border h-full overflow-hidden"
         >
           {drawerContent}
         </aside>
@@ -782,11 +782,11 @@ export function LeftDrawer({
           <div
             aria-hidden="true"
             onClick={onCloseMobile}
-            className="fixed inset-0 bg-black/65 backdrop-blur-sm"
+            className="fixed inset-0 bg-ink/60 backdrop-blur-sm"
           />
           <aside
             aria-label="Conversations and projects drawer"
-            className="relative z-10 w-[296px] max-w-[85vw] h-full border-r border-white/[0.1] shadow-2xl"
+            className="relative z-10 w-[296px] max-w-[85vw] h-full border-r border-border"
           >
             {drawerContent}
           </aside>
