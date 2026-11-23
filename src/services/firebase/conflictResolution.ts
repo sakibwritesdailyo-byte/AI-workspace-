@@ -624,7 +624,7 @@ export function reconcileCloudAndLocalWorkspace(input: {
       continue;
     }
 
-    // Concurrent conversation conflict: keep remote & preserve local metadata+messages as Conflict Copy
+    // Concurrent active-conversation conflict: preserve both divergent edits as a copy.
     pushRemoteConv(remoteConv);
     outboxAcks.push({ id: outbox.id, operationId: outbox.operationId });
 
