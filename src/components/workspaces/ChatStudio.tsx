@@ -741,7 +741,7 @@ export function ChatStudio({
                   </div>
 
                   <div
-                    className={\`max-w-[92%] sm:max-w-[82%] rounded-2xl px-4 py-3 text-[14px] leading-relaxed [&_.my-2\\.5]:!bg-sunken [&_.my-2\\.5>div]:!bg-raised [&_.my-2\\.5_pre]:!bg-sunken [&_.my-2\\.5_pre]:!font-mono \${
+                    className={`max-w-[92%] sm:max-w-[82%] rounded-2xl px-4 py-3 text-[14px] leading-relaxed [&_.my-2\\.5]:!bg-sunken [&_.my-2\\.5>div]:!bg-raised [&_.my-2\\.5_pre]:!bg-sunken [&_.my-2\\.5_pre]:!font-mono ${
                       isUser
                         ? 'bg-raised text-ink border border-border'
                         : isSystem
