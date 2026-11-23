@@ -7,7 +7,6 @@ import {
   Eraser,
   Loader2,
   LogIn,
-  Mic,
   Pencil,
   Pin,
   Plus,
@@ -84,7 +83,6 @@ interface ChatStudioProps {
   onRegenerateLastResponse: () => void;
   onDismissNotice: () => void;
   onOpenSignIn: () => void;
-  onOpenVoiceStudio: () => void;
 }
 
 const STARTER_PROMPTS = [
@@ -117,7 +115,6 @@ export function ChatStudio({
   onRegenerateLastResponse,
   onDismissNotice,
   onOpenSignIn,
-  onOpenVoiceStudio,
 }: ChatStudioProps) {
   const [draft, setDraft] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -435,11 +432,6 @@ export function ChatStudio({
     }
   };
 
-  const handleSwitchToVoice = () => {
-    textareaRef.current?.blur();
-    onOpenVoiceStudio();
-  };
-
   const handleStartRename = () => {
     if (!activeConversation) return;
     setTitleDraft(activeConversation.title);
@@ -680,8 +672,8 @@ export function ChatStudio({
               {activeConversation ? 'Ready when you are' : 'Personal AI Studio'}
             </h2>
             <p className="text-xs text-zinc-300 mt-1.5 max-w-md leading-relaxed">
-              Messages save automatically in IndexedDB on this device. Type below in English or
-              বাংলা, or tap the microphone shortcut to open Voice Studio.
+              Messages save automatically in IndexedDB on this device. Type below to start a
+              conversation.
             </p>
 
             <div className="mt-6 w-full max-w-md divide-y divide-white/[0.06] border-y border-white/[0.06] text-left">
@@ -921,21 +913,11 @@ export function ChatStudio({
         )}
       </div>
 
-      {/* Compact Composer + Voice Microphone Shortcut */}
+      {/* Compact Composer */}
       <form
         onSubmit={handleSubmit}
         className="shrink-0 flex items-end gap-2 rounded-2xl border border-white/[0.12] bg-[#0E1218] p-1.5"
       >
-        <button
-          type="button"
-          onClick={handleSwitchToVoice}
-          aria-label="Open Voice Studio"
-          title="Open Voice Studio"
-          className="min-h-[44px] min-w-[44px] rounded-xl text-zinc-300 hover:text-emerald-300 hover:bg-emerald-500/10 inline-flex items-center justify-center transition-colors shrink-0"
-        >
-          <Mic className="w-4 h-4" />
-        </button>
-
         <textarea
           ref={textareaRef}
           rows={1}

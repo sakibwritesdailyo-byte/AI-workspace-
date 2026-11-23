@@ -103,6 +103,9 @@ function toSdkThinkingLevel(
   }
 }
 
+export const STRICT_ENGLISH_SYSTEM_INSTRUCTION =
+  'You are a professional software engineering assistant. Always respond in English only. Do not translate your responses into other languages unless explicitly asked.';
+
 export function buildGenerateContentConfig(params: {
   modelId: string;
   systemInstruction?: string;
@@ -114,9 +117,12 @@ export function buildGenerateContentConfig(params: {
   const modelCap = getChatModelDefinition(params.modelId);
   const config: GenerateContentConfig = {};
 
-  if (params.systemInstruction) {
-    config.systemInstruction = params.systemInstruction;
-  }
+  const trimmedSystem = params.systemInstruction?.trim() ?? '';
+  config.systemInstruction = trimmedSystem
+    ? trimmedSystem.includes(STRICT_ENGLISH_SYSTEM_INSTRUCTION)
+      ? trimmedSystem
+      : `${STRICT_ENGLISH_SYSTEM_INSTRUCTION}\n\n${trimmedSystem}`
+    : STRICT_ENGLISH_SYSTEM_INSTRUCTION;
 
   if (params.abortSignal) {
     config.abortSignal = params.abortSignal;
@@ -278,12 +284,15 @@ export async function streamGeminiChat(
     };
   }
 
+  const hasFallback = Boolean(params.routing.fallbackModel);
+
   const runAttempt = async (
     modelId: string,
     fallbackUsed: boolean,
   ): Promise<StreamChatCompleted | StreamChatFailed> => {
     const controller = new AbortController();
-    const timeoutMs = params.timeoutMs ?? 90_000;
+    const timeoutMs =
+      params.timeoutMs ?? (fallbackUsed ? 30_000 : hasFallback ? 12_000 : 30_000);
     let timedOut = false;
 
     const onParentAbort = () => controller.abort();

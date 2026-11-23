@@ -2,7 +2,6 @@ import {
   FolderKanban,
   History,
   MessageSquare,
-  Mic,
   PanelLeft,
   Plus,
   SlidersHorizontal,
@@ -19,7 +18,6 @@ import { SyncStatusBadge } from './sync/SyncStatusBadge';
 
 interface TopBarProps {
   activeWorkspace: WorkspaceId;
-  micActive: boolean;
   rightDrawerOpen: boolean;
   authStatus: AuthStatus;
   authUser: AuthUserProfile | null;
@@ -34,14 +32,12 @@ interface TopBarProps {
 
 const WORKSPACE_TABS: { id: WorkspaceId; label: string; icon: typeof MessageSquare }[] = [
   { id: 'chat', label: 'Chat', icon: MessageSquare },
-  { id: 'voice', label: 'Voice', icon: Mic },
   { id: 'projects', label: 'Projects', icon: FolderKanban },
   { id: 'history', label: 'History', icon: History },
 ];
 
 export function TopBar({
   activeWorkspace,
-  micActive,
   rightDrawerOpen,
   authStatus,
   authUser,
@@ -96,18 +92,8 @@ export function TopBar({
         })}
       </nav>
 
-      {/* Zone 3: Live mic + Sync status + Account + PWA install + Settings + New Chat */}
+      {/* Zone 3: Sync status + Account + PWA install + Settings + New Chat */}
       <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        {micActive && (
-          <span
-            role="status"
-            aria-live="polite"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-300 px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/25 whitespace-nowrap"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Mic Live
-          </span>
-        )}
 
         <SyncStatusBadge
           compact

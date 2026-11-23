@@ -14,7 +14,6 @@ import { ChatStudio } from './components/workspaces/ChatStudio';
 import { useMobileKeyboard } from './hooks/useMobileKeyboard';
 import { HistoryWorkspace } from './components/workspaces/HistoryWorkspace';
 import { ProjectsWorkspace } from './components/workspaces/ProjectsWorkspace';
-import { VoiceStudio } from './components/workspaces/VoiceStudio';
 import {
   buildSingleProjectExportBundle,
   buildWorkspaceExportBundle,
@@ -36,7 +35,6 @@ import {
 import { workspaceRepository } from './services/indexedDbStorage';
 import { WorkspacePersistenceCoordinator } from './services/workspacePersistence';
 import type { PersistedWorkspaceSnapshot } from './services/workspaceRepository';
-import { voiceService } from './services/voiceService';
 import {
   applyImportWorkspaceBundle,
   createInitialWorkspaceState,
@@ -210,12 +208,6 @@ export default function App() {
       },
     );
   }
-
-  const activeVoiceSessionMetaRef = useRef<{
-    id: string;
-    startedAt: string;
-    conversationId: string | null;
-  } | null>(null);
 
   const activeProject = getActiveProject(state);
   const activeFile = getActiveFile(state);
@@ -436,9 +428,6 @@ export default function App() {
   };
 
   const handleSelectWorkspace = (workspace: WorkspaceId) => {
-    if (workspace === 'voice' && document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
-    }
     void flushPersistToDb();
     dispatch({ type: 'SET_WORKSPACE', workspace });
   };
@@ -639,93 +628,6 @@ export default function App() {
       currentConv.id,
       trimmedHistory.map((m) => ({ role: m.role, content: m.content })),
     );
-  };
-
-  // Real microphone permission check + ephemeral token endpoint check + voice session metadata logging
-  const handleStartVoiceSession = async () => {
-    dispatch({ type: 'SET_WORKSPACE', workspace: 'voice' });
-    dispatch({ type: 'VOICE_EVENT', event: { type: 'REQUEST_MIC' } });
-
-    const sessionId = generateStableId('voice');
-    const startedAt = new Date().toISOString();
-    activeVoiceSessionMetaRef.current = {
-      id: sessionId,
-      startedAt,
-      conversationId: stateRef.current.activeConversationId,
-    };
-
-    const result = await voiceService.startSession({
-      model: stateRef.current.modelSettings.liveModel,
-      voiceSettings: stateRef.current.voiceSettings,
-      systemInstruction: stateRef.current.modelSettings.customSystemPrompt,
-    });
-
-    if (!result.ok) {
-      dispatch({
-        type: 'VOICE_EVENT',
-        event: {
-          type: 'ERROR',
-          micPermission: result.micPermission,
-          message: result.message,
-        },
-      });
-      dispatch({
-        type: 'RECORD_VOICE_SESSION',
-        record: {
-          id: sessionId,
-          conversationId: stateRef.current.activeConversationId,
-          model: stateRef.current.modelSettings.liveModel,
-          languageMode: stateRef.current.voiceSettings.languageMode,
-          status: 'error',
-          micPermission: result.micPermission,
-          startedAt,
-          endedAt: new Date().toISOString(),
-          durationSeconds: 0,
-          errorMessage: result.message,
-          transcriptsSaved: false,
-          transcripts: [],
-          rawAudioStored: false,
-        },
-      });
-      activeVoiceSessionMetaRef.current = null;
-      return;
-    }
-
-    dispatch({ type: 'VOICE_EVENT', event: { type: 'MIC_READY' } });
-    dispatch({ type: 'VOICE_EVENT', event: { type: 'CONNECTED' } });
-  };
-
-  const handleEndVoiceSession = () => {
-    const currentVoice = stateRef.current.voiceSession;
-    const meta = activeVoiceSessionMetaRef.current;
-    voiceService.stopSession();
-    dispatch({ type: 'VOICE_EVENT', event: { type: 'END_SESSION' } });
-
-    if (meta) {
-      dispatch({
-        type: 'RECORD_VOICE_SESSION',
-        record: {
-          id: meta.id,
-          conversationId: meta.conversationId,
-          model: stateRef.current.modelSettings.liveModel,
-          languageMode: stateRef.current.voiceSettings.languageMode,
-          status: 'disconnected',
-          micPermission: currentVoice.micPermission,
-          startedAt: meta.startedAt,
-          endedAt: new Date().toISOString(),
-          durationSeconds: currentVoice.elapsedSeconds,
-          errorMessage: null,
-          transcriptsSaved: Boolean(
-            stateRef.current.voiceSettings.saveTranscripts && currentVoice.captions.length > 0,
-          ),
-          transcripts: stateRef.current.voiceSettings.saveTranscripts
-            ? currentVoice.captions
-            : [],
-          rawAudioStored: false,
-        },
-      });
-      activeVoiceSessionMetaRef.current = null;
-    }
   };
 
   const handleExportWorkspace = () => {
@@ -1087,7 +989,6 @@ export default function App() {
     >
       <TopBar
         activeWorkspace={state.activeWorkspace}
-        micActive={state.voiceSession.micActive}
         rightDrawerOpen={state.rightDrawerOpen}
         authStatus={authStatus}
         authUser={authUser}
@@ -1252,38 +1153,6 @@ export default function App() {
               onRegenerateLastResponse={() => void handleRegenerateLastResponse()}
               onDismissNotice={() => dispatch({ type: 'CLEAR_CHAT_NOTICE' })}
               onOpenSignIn={() => handleOpenAuthModal('signin')}
-              onOpenVoiceStudio={() => handleSelectWorkspace('voice')}
-            />
-          )}
-
-          {state.activeWorkspace === 'voice' && (
-            <VoiceStudio
-              session={state.voiceSession}
-              voiceSettings={state.voiceSettings}
-              modelSettings={state.modelSettings}
-              onStartSession={() => void handleStartVoiceSession()}
-              onEndSession={handleEndVoiceSession}
-              onToggleMute={() => {
-                voiceService.setMuted(!state.voiceSession.isMuted);
-                dispatch({ type: 'VOICE_EVENT', event: { type: 'TOGGLE_MUTE' } });
-              }}
-              onTogglePause={() =>
-                dispatch({ type: 'VOICE_EVENT', event: { type: 'TOGGLE_PAUSE' } })
-              }
-              onInterrupt={() => {
-                voiceService.interrupt();
-                dispatch({
-                  type: 'VOICE_EVENT',
-                  event: {
-                    type: 'BARGE_IN',
-                    allowBargeIn: state.voiceSettings.allowBargeIn,
-                  },
-                });
-              }}
-              onUpdateVoiceSettings={(patch) =>
-                dispatch({ type: 'UPDATE_VOICE_SETTINGS', patch })
-              }
-              onBackToChat={() => handleSelectWorkspace('chat')}
             />
           )}
 
@@ -1504,7 +1373,6 @@ export default function App() {
 
       <MobileBottomNav
         activeWorkspace={state.activeWorkspace}
-        micActive={state.voiceSession.micActive}
         hidden={keyboardOpen}
         onSelectWorkspace={handleSelectWorkspace}
       />

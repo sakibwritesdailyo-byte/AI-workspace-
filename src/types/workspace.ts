@@ -1,4 +1,4 @@
-export type WorkspaceId = 'chat' | 'voice' | 'projects' | 'history';
+export type WorkspaceId = 'chat' | 'projects' | 'history';
 
 export type ProjectSubView = 'overview' | 'code' | 'preview';
 

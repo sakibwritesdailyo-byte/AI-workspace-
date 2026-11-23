@@ -16,34 +16,18 @@ export interface ChatModelDefinition {
   requiresPaidKey: boolean;
 }
 
-export const DEFAULT_CHAT_MODEL = 'gemini-4-hydrogen';
+export const DEFAULT_CHAT_MODEL = 'gemini-3.1-flash-lite';
 export const DEFAULT_FAST_FALLBACK_MODEL = 'gemini-3.1-flash-lite';
 export const DEFAULT_LIVE_VOICE_MODEL = 'gemini-3.8-live';
 
 export const CHAT_MODEL_CATALOG: readonly ChatModelDefinition[] = [
-  {
-    id: 'gemini-4-hydrogen',
-    label: 'Gemini 4 Hydrogen (Balanced)',
-    shortLabel: 'Gemini 4 Hydrogen',
-    tier: 'standard',
-    description:
-      'Default balanced model for reasoning, coding, structured notes, and bilingual EN/বাংলা chat.',
-    supportsThinkingLevel: true,
-    supportedThinkingLevels: ['low', 'medium', 'high', 'xhigh'],
-    defaultThinkingLevel: 'high',
-    supportsTemperature: false,
-    defaultMaxOutputTokens: 4096,
-    maxOutputTokensCap: 8192,
-    maxInputChars: 48_000,
-    requiresPaidKey: false,
-  },
   {
     id: 'gemini-3.1-flash-lite',
     label: 'Gemini 3.1 Flash Lite (Fast)',
     shortLabel: 'Gemini 3.1 Flash Lite',
     tier: 'fast',
     description:
-      'Low-latency lightweight model suited for quick Q&A, drafts, and automatic fallback.',
+      'Default low-latency lightweight model suited for quick Q&A, coding, drafts, and instant replies.',
     supportsThinkingLevel: true,
     supportedThinkingLevels: ['minimal', 'low', 'medium', 'high'],
     defaultThinkingLevel: 'minimal',
@@ -51,6 +35,22 @@ export const CHAT_MODEL_CATALOG: readonly ChatModelDefinition[] = [
     defaultMaxOutputTokens: 4096,
     maxOutputTokensCap: 8192,
     maxInputChars: 40_000,
+    requiresPaidKey: false,
+  },
+  {
+    id: 'gemini-4-hydrogen',
+    label: 'Gemini 4 Hydrogen (Balanced)',
+    shortLabel: 'Gemini 4 Hydrogen',
+    tier: 'standard',
+    description:
+      'Balanced reasoning model for deeper architecture, coding, and structured technical notes.',
+    supportsThinkingLevel: true,
+    supportedThinkingLevels: ['low', 'medium', 'high', 'xhigh'],
+    defaultThinkingLevel: 'high',
+    supportsTemperature: false,
+    defaultMaxOutputTokens: 4096,
+    maxOutputTokensCap: 8192,
+    maxInputChars: 48_000,
     requiresPaidKey: false,
   },
 ] as const;

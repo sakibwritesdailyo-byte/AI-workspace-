@@ -58,7 +58,7 @@ test('modelRegistry resolves active models, legacy aliases, and rejects deprecat
   assert.equal(unknown.ok, false);
 });
 
-test('buildGenerateContentConfig never passes sampling params on Gemini 4 models', () => {
+test('buildGenerateContentConfig never passes sampling params on Gemini 4 models and enforces strict English system instruction', () => {
   const config = buildGenerateContentConfig({
     modelId: 'gemini-4-hydrogen',
     systemInstruction: 'Be concise.',
@@ -67,7 +67,13 @@ test('buildGenerateContentConfig never passes sampling params on Gemini 4 models
     maxOutputTokens: 2048,
   });
   assert.equal(config.temperature, undefined);
-  assert.equal(config.systemInstruction, 'Be concise.');
+  const systemText =
+    typeof config.systemInstruction === 'string' ? config.systemInstruction : '';
+  assert.match(
+    systemText,
+    /You are a professional software engineering assistant\. Always respond in English only\./,
+  );
+  assert.match(systemText, /Be concise\./);
   assert.equal(config.maxOutputTokens, 2048);
   assert.ok(config.thinkingConfig);
 });
