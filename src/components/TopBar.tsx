@@ -50,7 +50,7 @@ export function TopBar({
   onNewChat,
 }: TopBarProps) {
   return (
-    <header className="sticky top-0 z-30 shrink-0 border-b border-white/[0.07] bg-[#090B0E]/92 backdrop-blur-md pt-[env(safe-area-inset-top)]">
+    <header className="sticky top-0 z-30 shrink-0 border-b border-border bg-surface backdrop-blur-md pt-[env(safe-area-inset-top)]">
       <div className="h-[52px] px-3 lg:px-5 flex items-center justify-between gap-2 sm:gap-3">
       {/* Zone 1: Drawer toggle + clean single-line brand wordmark */}
       <div className="flex items-center gap-2 min-w-0">
@@ -58,12 +58,12 @@ export function TopBar({
           type="button"
           onClick={onToggleLeftDrawer}
           aria-label="Toggle conversations and project files drawer"
-          className="min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded-lg text-zinc-300 hover:text-zinc-100 hover:bg-white/[0.06] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60"
+          className="min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded-lg text-muted hover:text-ink hover:bg-raised transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal/60"
         >
           <PanelLeft className="w-[18px] h-[18px]" />
         </button>
 
-        <span className="text-[15px] font-semibold tracking-tight text-zinc-100 whitespace-nowrap truncate">
+        <span className="text-[15px] font-semibold tracking-tight text-ink whitespace-nowrap truncate">
           Personal AI Studio
         </span>
       </div>
@@ -79,10 +79,10 @@ export function TopBar({
               type="button"
               onClick={() => onSelectWorkspace(tab.id)}
               aria-current={active ? 'page' : undefined}
-              className={`px-3.5 py-2 text-[13px] font-medium rounded-lg inline-flex items-center gap-2 whitespace-nowrap shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60 ${
+              className={`px-3.5 py-2 text-[13px] font-medium rounded-lg inline-flex items-center gap-2 whitespace-nowrap shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal/60 ${
                 active
-                  ? 'text-emerald-300 bg-emerald-500/10'
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.05]'
+                  ? 'text-signal bg-signal/10'
+                  : 'text-muted hover:text-ink hover:bg-raised'
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
@@ -112,10 +112,10 @@ export function TopBar({
               ? `Account settings for ${authUser.email || authUser.displayName || 'signed-in user'}`
               : 'Sign in for cloud sync'
           }
-          className={`min-h-[38px] min-w-[38px] px-2 lg:px-2.5 rounded-lg inline-flex items-center justify-center gap-1.5 text-[13px] font-medium whitespace-nowrap shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60 ${
+          className={`min-h-[38px] min-w-[38px] px-2 lg:px-2.5 rounded-lg inline-flex items-center justify-center gap-1.5 text-[13px] font-medium whitespace-nowrap shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal/60 ${
             authUser
-              ? 'text-emerald-200 border border-emerald-500/25 bg-emerald-500/10 hover:bg-emerald-500/18'
-              : 'text-zinc-300 hover:text-white hover:bg-white/[0.06] border border-white/[0.08]'
+              ? 'text-signal border border-border bg-signal/10 hover:bg-signal/15'
+              : 'text-muted hover:text-ink hover:bg-raised border border-border'
           }`}
         >
           <UserCircle2 className="w-4 h-4 shrink-0" />
@@ -133,10 +133,10 @@ export function TopBar({
           onClick={onToggleRightDrawer}
           aria-expanded={rightDrawerOpen}
           aria-label="Open settings drawer"
-          className={`min-h-[40px] min-w-[40px] px-2.5 lg:px-3 rounded-lg inline-flex items-center justify-center gap-2 text-[13px] font-medium whitespace-nowrap shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60 ${
+          className={`min-h-[40px] min-w-[40px] px-2.5 lg:px-3 rounded-lg inline-flex items-center justify-center gap-2 text-[13px] font-medium whitespace-nowrap shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal/60 ${
             rightDrawerOpen
-              ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
-              : 'text-zinc-300 hover:text-white hover:bg-white/[0.06] border border-white/[0.08]'
+              ? 'bg-signal/10 text-signal border border-border'
+              : 'text-muted hover:text-ink hover:bg-raised border border-border'
           }`}
         >
           <SlidersHorizontal className="w-4 h-4" />
@@ -147,7 +147,7 @@ export function TopBar({
           type="button"
           onClick={onNewChat}
           aria-label="New Chat"
-          className="min-h-[40px] min-w-[40px] px-2.5 sm:px-3.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#052317] text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+          className="min-h-[40px] min-w-[40px] px-2.5 sm:px-3.5 rounded-lg bg-signal hover:bg-signal/90 text-on-signal text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal"
         >
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">New Chat</span>
