@@ -259,11 +259,11 @@ export function ProjectsWorkspace({
   return (
     <div className="h-full flex flex-col">
       {/* Sub-navigation bar inside Projects */}
-      <div className="px-4 sm:px-6 py-2.5 border-b border-white/[0.07] bg-[#0B0E13] flex flex-wrap items-center justify-between gap-3">
+      <div className="px-4 sm:px-6 py-2.5 border-b border-border bg-sunken flex flex-wrap items-center justify-between gap-3">
         <div
           role="tablist"
           aria-label="Project workspace views"
-          className="inline-flex items-center p-1 rounded-xl bg-[#10141A] border border-white/[0.08]"
+          className="inline-flex items-center p-1 rounded-xl bg-raised border border-border"
         >
           <button
             type="button"
@@ -272,8 +272,8 @@ export function ProjectsWorkspace({
             onClick={() => onChangeSubView('overview')}
             className={`min-h-[36px] px-3 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 transition-colors ${
               subView === 'overview'
-                ? 'bg-emerald-500/15 text-emerald-300'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-signal/10 text-signal'
+                : 'text-muted hover:text-ink'
             }`}
           >
             <FolderKanban className="w-3.5 h-3.5" />
@@ -288,8 +288,8 @@ export function ProjectsWorkspace({
             onClick={() => onChangeSubView('code')}
             className={`min-h-[36px] px-3 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 disabled:opacity-40 transition-colors ${
               subView === 'code'
-                ? 'bg-emerald-500/15 text-emerald-300'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-signal/10 text-signal'
+                : 'text-muted hover:text-ink'
             }`}
           >
             <Code2 className="w-3.5 h-3.5" />
@@ -304,8 +304,8 @@ export function ProjectsWorkspace({
             onClick={() => onChangeSubView('preview')}
             className={`min-h-[36px] px-3 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 disabled:opacity-40 transition-colors ${
               subView === 'preview'
-                ? 'bg-emerald-500/15 text-emerald-300'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-signal/10 text-signal'
+                : 'text-muted hover:text-ink'
             }`}
           >
             <Eye className="w-3.5 h-3.5" />
@@ -314,8 +314,8 @@ export function ProjectsWorkspace({
         </div>
 
         {activeProject && subView === 'overview' && (
-          <span className="text-xs text-zinc-400 truncate">
-            Active: <strong className="text-zinc-200 font-medium">{activeProject.name}</strong>
+          <span className="text-xs text-muted truncate">
+            Active: <strong className="text-ink font-medium">{activeProject.name}</strong>
           </span>
         )}
       </div>
@@ -357,8 +357,8 @@ export function ProjectsWorkspace({
           {/* Header & Actions */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h1 className="text-xl font-semibold text-zinc-100">Projects</h1>
-              <p className="text-xs text-zinc-400 mt-1">
+              <h1 className="text-xl font-semibold text-ink">Projects</h1>
+              <p className="text-xs text-muted mt-1">
                 Local-first projects saved in IndexedDB with CodeMirror 6 and sandboxed preview.
               </p>
             </div>
@@ -367,7 +367,7 @@ export function ProjectsWorkspace({
               <button
                 type="button"
                 onClick={onExportWorkspace}
-                className="min-h-[40px] px-3 rounded-xl border border-white/[0.1] text-xs font-medium text-zinc-200 hover:text-zinc-100 hover:bg-white/[0.06] inline-flex items-center gap-1.5"
+                className="min-h-[40px] px-3 rounded-xl border border-border text-xs font-medium text-ink hover:text-ink hover:bg-surface inline-flex items-center gap-1.5"
               >
                 <Download className="w-3.5 h-3.5" />
                 Export All
@@ -376,7 +376,7 @@ export function ProjectsWorkspace({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="min-h-[40px] px-3 rounded-xl border border-white/[0.1] text-xs font-medium text-zinc-200 hover:text-zinc-100 hover:bg-white/[0.06] inline-flex items-center gap-1.5"
+                className="min-h-[40px] px-3 rounded-xl border border-border text-xs font-medium text-ink hover:text-ink hover:bg-surface inline-flex items-center gap-1.5"
               >
                 <Upload className="w-3.5 h-3.5" />
                 Import
@@ -393,7 +393,7 @@ export function ProjectsWorkspace({
               <button
                 type="button"
                 onClick={() => setCreating((prev) => !prev)}
-                className="min-h-[40px] px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#052317] text-xs font-semibold inline-flex items-center gap-1.5"
+                className="min-h-[40px] px-4 rounded-xl bg-signal hover:bg-signal/90 text-on-signal text-xs font-semibold inline-flex items-center gap-1.5"
               >
                 <FolderPlus className="w-4 h-4" />
                 New Project
@@ -404,7 +404,7 @@ export function ProjectsWorkspace({
           {importError && (
             <div
               role="alert"
-              className="rounded-xl border border-rose-500/30 bg-rose-950/30 px-4 py-2.5 text-xs text-rose-200"
+              className="rounded-xl border border-border bg-raised px-4 py-2.5 text-xs text-signal"
             >
               {importError}
             </div>
@@ -413,9 +413,9 @@ export function ProjectsWorkspace({
           {creating && (
             <form
               onSubmit={handleCreateSubmit}
-              className="rounded-2xl border border-white/[0.1] bg-[#0F1319] p-4 space-y-3"
+              className="rounded-2xl border border-border bg-raised p-4 space-y-3"
             >
-              <h2 className="text-sm font-semibold text-zinc-100">Create Local Project</h2>
+              <h2 className="text-sm font-semibold text-ink">Create Local Project</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input
                   type="text"
@@ -423,7 +423,7 @@ export function ProjectsWorkspace({
                   onChange={(e) => setNameDraft(e.target.value)}
                   placeholder="Project name (e.g. Habit Tracker)"
                   aria-label="Project name"
-                  className="h-10 px-3 rounded-xl bg-[#090B0E] border border-white/15 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500"
+                  className="h-10 px-3 rounded-xl bg-raised border border-border text-xs text-ink placeholder:text-muted focus:outline-none focus:border-signal"
                   autoFocus
                 />
                 <input
@@ -432,20 +432,20 @@ export function ProjectsWorkspace({
                   onChange={(e) => setDescDraft(e.target.value)}
                   placeholder="Short description (optional)"
                   aria-label="Project description"
-                  className="h-10 px-3 rounded-xl bg-[#090B0E] border border-white/15 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500"
+                  className="h-10 px-3 rounded-xl bg-raised border border-border text-xs text-ink placeholder:text-muted focus:outline-none focus:border-signal"
                 />
               </div>
               <div className="flex items-center gap-2 justify-end">
                 <button
                   type="button"
                   onClick={() => setCreating(false)}
-                  className="min-h-[38px] px-3 rounded-lg text-xs text-zinc-300 hover:bg-white/[0.06]"
+                  className="min-h-[38px] px-3 rounded-lg text-xs text-muted hover:bg-surface"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="min-h-[38px] px-4 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#052317] text-xs font-semibold"
+                  className="min-h-[38px] px-4 rounded-lg bg-signal hover:bg-signal/90 text-on-signal text-xs font-semibold"
                 >
                   Create & Open Code
                 </button>
@@ -455,20 +455,20 @@ export function ProjectsWorkspace({
 
           {/* Your Real IndexedDB Projects */}
           <section className="space-y-3">
-            <h2 className="text-xs font-semibold text-zinc-400">
+            <h2 className="text-xs font-semibold text-muted">
               Your Projects ({projects.length})
             </h2>
 
             {projects.length === 0 ? (
-              <div className="py-10 px-4 border-y border-white/[0.06] text-center space-y-3">
-                <p className="text-sm font-medium text-zinc-200">No personal projects saved yet</p>
-                <p className="text-xs text-zinc-400 max-w-md mx-auto">
+              <div className="py-10 px-4 border-y border-border text-center space-y-3">
+                <p className="text-sm font-medium text-ink">No personal projects saved yet</p>
+                <p className="text-xs text-muted max-w-md mx-auto">
                   Create a fresh project above, import a JSON bundle, or clone a sample template
                   below.
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-white/[0.07] border-y border-white/[0.07]">
+              <div className="divide-y divide-border border-y border-border">
                 {projects.map((project) => {
                   const isActive = activeProject && !activeProject.isSample && activeProject.id === project.id;
                   const isRenaming = renamingProjectId === project.id;
@@ -488,13 +488,13 @@ export function ProjectsWorkspace({
                               value={projectRenameDraft}
                               onChange={(e) => setProjectRenameDraft(e.target.value)}
                               aria-label={`Rename project ${project.name}`}
-                              className="flex-1 h-9 px-2.5 rounded-lg bg-[#090B0E] border border-emerald-500/60 text-xs text-zinc-100"
+                              className="flex-1 h-9 px-2.5 rounded-lg bg-raised border border-signal text-xs text-ink"
                               autoFocus
                             />
                             <button
                               type="submit"
                               aria-label="Save project rename"
-                              className="h-9 px-3 rounded-lg bg-emerald-500 text-[#052317] text-xs font-semibold inline-flex items-center gap-1"
+                              className="h-9 px-3 rounded-lg bg-signal text-on-signal text-xs font-semibold inline-flex items-center gap-1"
                             >
                               <Check className="w-3.5 h-3.5" />
                               Save
@@ -502,7 +502,7 @@ export function ProjectsWorkspace({
                             <button
                               type="button"
                               onClick={() => setRenamingProjectId(null)}
-                              className="h-9 px-2.5 rounded-lg text-xs text-zinc-300 hover:bg-white/[0.06]"
+                              className="h-9 px-2.5 rounded-lg text-xs text-muted hover:bg-surface"
                             >
                               Cancel
                             </button>
@@ -510,17 +510,17 @@ export function ProjectsWorkspace({
                         ) : (
                           <>
                             <div className="flex items-center gap-2">
-                              <h3 className="text-sm font-semibold text-zinc-100 truncate">
+                              <h3 className="text-sm font-semibold text-ink truncate">
                                 {project.name}
                               </h3>
                               {isActive && (
-                                <span className="text-xs font-medium text-emerald-300">Active</span>
+                                <span className="text-xs font-medium text-signal">Active</span>
                               )}
                             </div>
-                            <p className="text-xs text-zinc-400 mt-0.5 line-clamp-1">
+                            <p className="text-xs text-muted mt-0.5 line-clamp-1">
                               {project.description}
                             </p>
-                            <p className="text-xs text-zinc-400 mt-1 font-mono tabular-nums">
+                            <p className="text-xs text-muted mt-1 font-mono tabular-nums">
                               {project.files.length === 1 ? '1 file' : `${project.files.length} files`} ·{' '}
                               {(() => {
                                 const count = getProjectFolders(project).length;
@@ -536,16 +536,16 @@ export function ProjectsWorkspace({
                         <button
                           type="button"
                           onClick={() => onSelectProject(project.id, 'code')}
-                          className="min-h-[40px] px-3 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-xs font-medium text-zinc-200 inline-flex items-center gap-1.5"
+                          className="min-h-[40px] px-3 rounded-lg bg-raised hover:bg-surface text-xs font-medium text-ink inline-flex items-center gap-1.5"
                         >
-                          <Code2 className="w-3.5 h-3.5 text-emerald-400" />
+                          <Code2 className="w-3.5 h-3.5 text-signal" />
                           Code
                         </button>
 
                         <button
                           type="button"
                           onClick={() => onSelectProject(project.id, 'preview')}
-                          className="min-h-[40px] px-3 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-xs font-medium text-zinc-200 inline-flex items-center gap-1.5"
+                          className="min-h-[40px] px-3 rounded-lg bg-raised hover:bg-surface text-xs font-medium text-ink inline-flex items-center gap-1.5"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           Preview
@@ -558,7 +558,7 @@ export function ProjectsWorkspace({
                             setProjectRenameDraft(project.name);
                           }}
                           aria-label={`Rename project ${project.name}`}
-                          className="min-h-[40px] min-w-[40px] rounded-lg text-zinc-300 hover:text-zinc-100 hover:bg-white/[0.06] inline-flex items-center justify-center"
+                          className="min-h-[40px] min-w-[40px] rounded-lg text-muted hover:text-ink hover:bg-surface inline-flex items-center justify-center"
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
@@ -567,7 +567,7 @@ export function ProjectsWorkspace({
                           type="button"
                           onClick={() => onDuplicateProject(project.id)}
                           aria-label={`Duplicate project ${project.name}`}
-                          className="min-h-[40px] min-w-[40px] rounded-lg text-zinc-300 hover:text-emerald-300 hover:bg-white/[0.06] inline-flex items-center justify-center"
+                          className="min-h-[40px] min-w-[40px] rounded-lg text-muted hover:text-signal hover:bg-surface inline-flex items-center justify-center"
                         >
                           <CopyPlus className="w-4 h-4" />
                         </button>
@@ -576,7 +576,7 @@ export function ProjectsWorkspace({
                           type="button"
                           onClick={() => onExportProject(project)}
                           aria-label={`Export project ${project.name}`}
-                          className="min-h-[40px] min-w-[40px] rounded-lg text-zinc-300 hover:text-emerald-300 hover:bg-white/[0.06] inline-flex items-center justify-center"
+                          className="min-h-[40px] min-w-[40px] rounded-lg text-muted hover:text-signal hover:bg-surface inline-flex items-center justify-center"
                         >
                           <Download className="w-4 h-4" />
                         </button>
@@ -585,7 +585,7 @@ export function ProjectsWorkspace({
                           type="button"
                           onClick={() => onRequestDeleteProject(project)}
                           aria-label={`Delete project ${project.name}`}
-                          className="min-h-[40px] min-w-[40px] rounded-lg text-zinc-300 hover:text-rose-300 hover:bg-rose-500/10 inline-flex items-center justify-center"
+                          className="min-h-[40px] min-w-[40px] rounded-lg text-muted hover:text-signal hover:bg-signal/10 inline-flex items-center justify-center"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -599,13 +599,13 @@ export function ProjectsWorkspace({
 
           {/* Active Project Files & Nested Folders Manager (always accessible on Android mobile) */}
           {activeProject && !activeProject.isSample && (
-            <section className="space-y-3 pt-1">
+            <section className="space-y-3 pt-3 rounded-xl border border-border bg-sunken p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <h2 className="text-xs font-semibold text-zinc-400">
+                  <h2 className="text-xs font-semibold text-muted">
                     Files & Folders · {activeProject.name}
                   </h2>
-                  <p className="text-xs text-zinc-400 mt-0.5">
+                  <p className="text-xs text-muted mt-0.5">
                     Create nested folders, add files, rename, or open directly in Code Studio.
                   </p>
                 </div>
@@ -619,9 +619,9 @@ export function ProjectsWorkspace({
                       setFolderValidationError(null);
                       setFileValidationError(null);
                     }}
-                    className="min-h-[40px] px-3 rounded-lg border border-white/[0.1] text-xs font-medium text-zinc-200 hover:bg-white/[0.06] inline-flex items-center gap-1.5"
+                    className="min-h-[40px] px-3 rounded-lg border border-border text-xs font-medium text-ink hover:bg-surface inline-flex items-center gap-1.5"
                   >
-                    <FolderPlus className="w-3.5 h-3.5 text-emerald-400" />
+                    <FolderPlus className="w-3.5 h-3.5 text-signal" />
                     New Folder
                   </button>
                   <button
@@ -632,9 +632,9 @@ export function ProjectsWorkspace({
                       setFolderValidationError(null);
                       setFileValidationError(null);
                     }}
-                    className="min-h-[40px] px-3 rounded-lg border border-white/[0.1] text-xs font-medium text-zinc-200 hover:bg-white/[0.06] inline-flex items-center gap-1.5"
+                    className="min-h-[40px] px-3 rounded-lg border border-border text-xs font-medium text-ink hover:bg-surface inline-flex items-center gap-1.5"
                   >
-                    <FilePlus2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <FilePlus2 className="w-3.5 h-3.5 text-signal" />
                     New File
                   </button>
                 </div>
@@ -643,7 +643,7 @@ export function ProjectsWorkspace({
               {(folderValidationError || fileValidationError) && (
                 <div
                   role="alert"
-                  className="rounded-xl border border-rose-500/35 bg-rose-950/30 px-3.5 py-2.5 text-xs text-rose-200"
+                  className="rounded-xl border border-border bg-raised px-3.5 py-2.5 text-xs text-signal"
                 >
                   {fileValidationError || folderValidationError}
                 </div>
@@ -652,7 +652,7 @@ export function ProjectsWorkspace({
               {creatingFolder && (
                 <form
                   onSubmit={handleCreateFolderSubmit}
-                  className="rounded-xl border border-white/[0.1] bg-[#0F1319] p-3 flex flex-wrap items-center gap-2"
+                  className="rounded-xl border border-border bg-raised p-3 flex flex-wrap items-center gap-2"
                 >
                   <input
                     type="text"
@@ -663,12 +663,12 @@ export function ProjectsWorkspace({
                     }}
                     placeholder="Folder path (e.g. src/components)"
                     aria-label="New folder path"
-                    className="flex-1 min-w-[180px] h-10 px-3 rounded-lg bg-[#090B0E] border border-white/15 text-xs text-zinc-100"
+                    className="flex-1 min-w-[180px] h-10 px-3 rounded-lg bg-raised border border-border text-xs text-ink"
                     autoFocus
                   />
                   <button
                     type="submit"
-                    className="min-h-[40px] px-3 rounded-lg bg-emerald-500 text-[#052317] text-xs font-semibold"
+                    className="min-h-[40px] px-3 rounded-lg bg-signal text-on-signal text-xs font-semibold"
                   >
                     Create Folder
                   </button>
@@ -678,7 +678,7 @@ export function ProjectsWorkspace({
                       setCreatingFolder(false);
                       setFolderValidationError(null);
                     }}
-                    className="min-h-[40px] px-2.5 rounded-lg text-xs text-zinc-300 hover:bg-white/[0.06]"
+                    className="min-h-[40px] px-2.5 rounded-lg text-xs text-muted hover:bg-surface"
                   >
                     Cancel
                   </button>
@@ -688,7 +688,7 @@ export function ProjectsWorkspace({
               {creatingFile && (
                 <form
                   onSubmit={handleCreateFileSubmit}
-                  className="rounded-xl border border-white/[0.1] bg-[#0F1319] p-3 flex flex-wrap items-center gap-2"
+                  className="rounded-xl border border-border bg-raised p-3 flex flex-wrap items-center gap-2"
                 >
                   <input
                     type="text"
@@ -699,7 +699,7 @@ export function ProjectsWorkspace({
                     }}
                     placeholder="src/utils"
                     aria-label="Target folder path"
-                    className="w-36 h-10 px-2.5 rounded-lg bg-[#090B0E] border border-white/15 text-xs text-zinc-100"
+                    className="w-36 h-10 px-2.5 rounded-lg bg-raised border border-border text-xs text-ink"
                   />
                   <input
                     type="text"
@@ -710,12 +710,12 @@ export function ProjectsWorkspace({
                     }}
                     placeholder="File name (e.g. app.js)"
                     aria-label="New file name"
-                    className="flex-1 min-w-[180px] h-10 px-3 rounded-lg bg-[#090B0E] border border-white/15 text-xs text-zinc-100"
+                    className="flex-1 min-w-[180px] h-10 px-3 rounded-lg bg-raised border border-border text-xs text-ink"
                     autoFocus
                   />
                   <button
                     type="submit"
-                    className="min-h-[40px] px-3 rounded-lg bg-emerald-500 text-[#052317] text-xs font-semibold"
+                    className="min-h-[40px] px-3 rounded-lg bg-signal text-on-signal text-xs font-semibold"
                   >
                     Create & Edit
                   </button>
@@ -725,14 +725,14 @@ export function ProjectsWorkspace({
                       setCreatingFile(false);
                       setFileValidationError(null);
                     }}
-                    className="min-h-[40px] px-2.5 rounded-lg text-xs text-zinc-300 hover:bg-white/[0.06]"
+                    className="min-h-[40px] px-2.5 rounded-lg text-xs text-muted hover:bg-surface"
                   >
                     Cancel
                   </button>
                 </form>
               )}
 
-              <div className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
+              <div className="divide-y divide-border border-y border-border">
                 {activeFolders.map((folder) => {
                   const folderFiles = activeProject.files.filter((f) => f.folder === folder);
                   const subtreeFileCount = activeProject.files.filter(
@@ -757,12 +757,12 @@ export function ProjectsWorkspace({
                                 setFolderValidationError(null);
                               }}
                               aria-label={`Rename folder ${folder}`}
-                              className="h-9 px-2.5 rounded bg-[#090B0E] border border-emerald-500/60 text-xs text-zinc-100"
+                              className="h-9 px-2.5 rounded bg-raised border border-signal text-xs text-ink"
                               autoFocus
                             />
                             <button
                               type="submit"
-                              className="min-h-[36px] px-2.5 rounded bg-emerald-500 text-[#052317] text-xs font-semibold"
+                              className="min-h-[36px] px-2.5 rounded bg-signal text-on-signal text-xs font-semibold"
                             >
                               Save
                             </button>
@@ -772,16 +772,16 @@ export function ProjectsWorkspace({
                                 setRenamingFolder(null);
                                 setFolderValidationError(null);
                               }}
-                              className="min-h-[36px] px-2 rounded text-xs text-zinc-300"
+                              className="min-h-[36px] px-2 rounded text-xs text-muted"
                             >
                               Cancel
                             </button>
                           </form>
                         ) : (
-                          <div className="flex items-center gap-2 text-xs font-medium text-zinc-200">
-                            <Folder className="w-3.5 h-3.5 text-emerald-400" />
+                          <div className="flex items-center gap-2 text-xs font-medium text-ink">
+                            <Folder className="w-3.5 h-3.5 text-signal" />
                             <span className="font-mono">{folder}</span>
-                            <span className="text-zinc-400">({folderFiles.length})</span>
+                            <span className="text-muted">({folderFiles.length})</span>
                           </div>
                         )}
 
@@ -795,7 +795,7 @@ export function ProjectsWorkspace({
                                 setFolderValidationError(null);
                               }}
                               aria-label={`Rename folder ${folder}`}
-                              className="min-h-[40px] min-w-[40px] rounded-md text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] inline-flex items-center justify-center"
+                              className="min-h-[40px] min-w-[40px] rounded-md text-muted hover:text-ink hover:bg-surface inline-flex items-center justify-center"
                             >
                               <Pencil className="w-3.5 h-3.5" />
                             </button>
@@ -813,7 +813,7 @@ export function ProjectsWorkspace({
                                   ? `Delete folder ${folder}`
                                   : 'Keep at least 1 file in project before deleting this folder'
                               }
-                              className="min-h-[40px] min-w-[40px] rounded-md text-zinc-400 hover:text-rose-300 hover:bg-rose-500/10 disabled:opacity-35 disabled:pointer-events-none inline-flex items-center justify-center"
+                              className="min-h-[40px] min-w-[40px] rounded-md text-muted hover:text-signal hover:bg-signal/10 disabled:opacity-35 disabled:pointer-events-none inline-flex items-center justify-center"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -843,12 +843,12 @@ export function ProjectsWorkspace({
                                         setFileValidationError(null);
                                       }}
                                       aria-label={`Rename file ${file.name}`}
-                                      className="h-9 px-2.5 rounded bg-[#090B0E] border border-emerald-500/60 text-xs text-zinc-100 font-mono"
+                                      className="h-9 px-2.5 rounded bg-raised border border-signal text-xs text-ink font-mono"
                                       autoFocus
                                     />
                                     <button
                                       type="submit"
-                                      className="min-h-[36px] px-2.5 rounded bg-emerald-500 text-[#052317] text-xs font-semibold"
+                                      className="min-h-[36px] px-2.5 rounded bg-signal text-on-signal text-xs font-semibold"
                                     >
                                       Save
                                     </button>
@@ -858,7 +858,7 @@ export function ProjectsWorkspace({
                                         setRenamingFileId(null);
                                         setFileValidationError(null);
                                       }}
-                                      className="min-h-[36px] px-2 rounded text-xs text-zinc-300"
+                                      className="min-h-[36px] px-2 rounded text-xs text-muted"
                                     >
                                       Cancel
                                     </button>
@@ -868,9 +868,9 @@ export function ProjectsWorkspace({
                                     <button
                                       type="button"
                                       onClick={() => onSelectFile(file.id, true)}
-                                      className="min-h-[40px] text-xs font-mono text-zinc-300 hover:text-emerald-300 inline-flex items-center gap-2 truncate"
+                                      className={`min-h-[40px] px-2 rounded-lg text-xs font-mono inline-flex items-center gap-2 truncate transition-colors ${ activeFile?.id === file.id ? 'bg-signal/10 text-signal' : 'text-muted hover:text-ink' }`
                                     >
-                                      <FileCode2 className="w-3.5 h-3.5 text-emerald-400/80 shrink-0" />
+                                      <FileCode2 className="w-3.5 h-3.5 text-signal/80 shrink-0" />
                                       <span className="truncate">{file.name}</span>
                                     </button>
 
@@ -883,7 +883,7 @@ export function ProjectsWorkspace({
                                           setFileValidationError(null);
                                         }}
                                         aria-label={`Rename file ${file.name}`}
-                                        className="min-h-[40px] min-w-[40px] rounded-md text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] inline-flex items-center justify-center"
+                                        className="min-h-[40px] min-w-[40px] rounded-md text-muted hover:text-ink hover:bg-surface inline-flex items-center justify-center"
                                       >
                                         <Pencil className="w-3.5 h-3.5" />
                                       </button>
@@ -892,7 +892,7 @@ export function ProjectsWorkspace({
                                           type="button"
                                           onClick={() => onRequestDeleteFile(file)}
                                           aria-label={`Delete file ${file.name}`}
-                                          className="min-h-[40px] min-w-[40px] rounded-md text-zinc-400 hover:text-rose-300 hover:bg-rose-500/10 inline-flex items-center justify-center"
+                                          className="min-h-[40px] min-w-[40px] rounded-md text-muted hover:text-signal hover:bg-signal/10 inline-flex items-center justify-center"
                                         >
                                           <Trash2 className="w-3.5 h-3.5" />
                                         </button>
@@ -915,33 +915,33 @@ export function ProjectsWorkspace({
           {/* Clearly Separated Sample Templates */}
           <section className="space-y-3 pt-2">
             <div>
-              <h2 className="text-xs font-semibold text-zinc-400">
+              <h2 className="text-xs font-semibold text-muted">
                 Sample Templates (Demo Reference)
               </h2>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <p className="text-xs text-muted mt-0.5">
                 Read-only demonstration projects. Clone one to save and edit it in your personal
                 IndexedDB workspace.
               </p>
             </div>
 
-            <div className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
+            <div className="divide-y divide-border border-y border-border">
               {SAMPLE_PROJECTS.map((sample) => (
                 <div
                   key={sample.id}
                   className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                 >
                   <div className="min-w-0">
-                    <div className="text-sm font-medium text-zinc-200 truncate">
+                    <div className="text-sm font-medium text-ink truncate">
                       {sample.name}
                     </div>
-                    <p className="text-xs text-zinc-400 mt-0.5">{sample.description}</p>
+                    <p className="text-xs text-muted mt-0.5">{sample.description}</p>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       type="button"
                       onClick={() => onPreviewSampleProject(sample.id, 'preview')}
-                      className="min-h-[38px] px-3 rounded-lg border border-white/[0.1] text-xs text-zinc-200 hover:text-white hover:bg-white/[0.05] inline-flex items-center gap-1.5"
+                      className="min-h-[38px] px-3 rounded-lg border border-border text-xs text-ink hover:text-ink hover:bg-surface inline-flex items-center gap-1.5"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       Preview Demo
@@ -949,7 +949,7 @@ export function ProjectsWorkspace({
                     <button
                       type="button"
                       onClick={() => onCloneSampleProject(sample.id)}
-                      className="min-h-[38px] px-3 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-xs font-medium inline-flex items-center gap-1.5"
+                      className="min-h-[38px] px-3 rounded-lg bg-signal/10 hover:bg-signal/15 text-signal text-xs font-medium inline-flex items-center gap-1.5"
                     >
                       <Copy className="w-3.5 h-3.5" />
                       Clone to My Projects
