@@ -1,0 +1,105 @@
+/* Generated from tokens.json. Do not hand-edit token values here. */
+@font-face {
+  font-family: 'Plus Jakarta Sans Metric Fallback';
+  src: local('Arial'), local('Helvetica Neue');
+  size-adjust: 100%;
+  ascent-override: 90%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono Metric Fallback';
+  src: local('Consolas'), local('Menlo');
+  size-adjust: 100%;
+  ascent-override: 90%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+}
+
+:root {
+  color-scheme: light;
+  --font-ui: 'Plus Jakarta Sans', 'Plus Jakarta Sans Metric Fallback', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'JetBrains Mono Metric Fallback', Consolas, monospace;
+  --measure-body: 68ch;
+  --measure-wide: 84ch;
+  --surface: #F5F1E9;
+  --raised: #FCFAF6;
+  --sunken: #EAE4D9;
+  --ink: #26251F;
+  --muted: #5E5A50;
+  --faint: #6D685D;
+  --border: #C8C0B3;
+  --signal: #79501F;
+  --on-signal: #FFFAF1;
+  --danger: #A13D32;
+  --success: #28613D;
+  --warning: #7A4B14;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --space-9: 48px;
+  --space-10: 64px;
+  --space-11: 80px;
+  --space-12: 96px;
+  --radius-1: 3px;
+  --radius-2: 6px;
+  --radius-3: 10px;
+  --radius-4: 14px;
+  --radius-full: 9999px;
+  --shadow-1: 0 1px 2px rgba(8, 10, 7, 0.18);
+  --shadow-2: 0 4px 12px rgba(8, 10, 7, 0.22);
+  --shadow-3: 0 14px 32px rgba(8, 10, 7, 0.28);
+  --ease-out: cubic-bezier(.22,.9,.24,1);
+  --ease-in: cubic-bezier(.5,0,.75,0);
+  --ease-in-out: cubic-bezier(.65,0,.35,1);
+  --ease-linear: linear;
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 320ms;
+  --dur-4: 560ms;
+  --type-1: clamp(0.75rem, calc(0.7280rem + 0.0939vw), 0.8125rem);
+  --type-1-line: 1.5;
+  --type-2: clamp(0.8125rem, calc(0.7905rem + 0.0939vw), 0.875rem);
+  --type-2-line: 1.5;
+  --type-3: clamp(0.875rem, calc(0.8310rem + 0.1878vw), 1rem);
+  --type-3-line: 1.45;
+  --type-4: clamp(1rem, calc(0.9560rem + 0.1878vw), 1.125rem);
+  --type-4-line: 1.4;
+  --type-5: clamp(1.25rem, calc(1.1620rem + 0.3756vw), 1.5rem);
+  --type-5-line: 1.25;
+  --type-6: clamp(1.75rem, calc(1.5739rem + 0.7512vw), 2.25rem);
+  --type-6-line: 1.15;
+  --type-7: clamp(2.5rem, calc(2.1479rem + 1.5023vw), 3.5rem);
+  --type-7-line: 1.05;
+}
+
+.dark {
+  color-scheme: dark;
+  --surface: #171916;
+  --raised: #20231E;
+  --sunken: #10130F;
+  --ink: #EEEDE4;
+  --muted: #B8B7AA;
+  --faint: #9C9B8E;
+  --border: #45483E;
+  --signal: #E2B56F;
+  --on-signal: #21190E;
+  --danger: #F08A7D;
+  --success: #8FCB9D;
+  --warning: #E6BC75;
+}
+
+/* Shared role aliases for code outside Tailwind utilities. */
+html, body, #root {
+  font-family: var(--font-ui);
+}
+
+code, pre, kbd, .font-mono {
+  font-family: var(--font-mono);
+}

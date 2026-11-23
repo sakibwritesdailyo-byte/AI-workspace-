@@ -1,10 +1,11 @@
 @import "tailwindcss";
+@import "./tokens.css";
+@config "../tailwind.config.js";
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   :root {
-    --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-sans: var(--font-ui);
   }
 
   html,
@@ -12,8 +13,8 @@
   #root {
     height: 100%;
     font-family: var(--font-sans);
-    background-color: #090b0e;
-    color: #eceff4;
+    background-color: var(--surface);
+    color: var(--ink);
     overscroll-behavior-y: contain;
   }
 
