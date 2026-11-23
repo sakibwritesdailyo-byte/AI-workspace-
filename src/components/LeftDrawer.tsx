@@ -254,9 +254,9 @@ export function LeftDrawer({
                       onSelectConversation(conv.id);
                       onCloseMobile();
                     }}
-                    className={`w-full min-h-[38px] px-2.5 py-1.5 rounded-lg flex items-center gap-2 text-left text-[13px] transition-colors ${
+                    className={`w-full min-h-[38px] px-2.5 py-1.5 rounded-lg border border-transparent flex items-center gap-2 text-left text-[13px] transition-colors ${
                       selected
-                        ? 'bg-signal/10 text-signal'
+                        ? 'bg-signal/10 text-signal border-signal'
                         : 'text-muted hover:text-ink hover:bg-raised'
                     }`}
                   >
@@ -360,9 +360,9 @@ export function LeftDrawer({
                 return (
                   <div
                     key={project.id}
-                    className={`group flex items-center justify-between rounded-lg pr-1 transition-colors ${
+                    className={`group flex items-center justify-between rounded-lg border border-transparent pr-1 transition-colors ${
                       selected
-                        ? 'bg-signal/10 text-ink'
+                        ? 'bg-signal/10 text-signal border-signal'
                         : 'text-muted hover:text-ink hover:bg-raised'
                     }`}
                   >
@@ -683,9 +683,9 @@ export function LeftDrawer({
                             return (
                               <div
                                 key={file.id}
-                                className={`group flex items-center justify-between rounded-md pr-1 ${
+                                className={`group flex items-center justify-between rounded-md border border-transparent pr-1 ${
                                   isSelected
-                                    ? 'bg-signal/10 text-signal'
+                                    ? 'bg-signal/10 text-signal border-signal'
                                     : 'hover:bg-raised'
                                 }`}
                               >
