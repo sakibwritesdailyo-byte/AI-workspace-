@@ -212,6 +212,7 @@ test('IndexedDbWorkspaceRepository handles CRUD, Trash vs permanent delete tombs
   assert.equal(loaded.conversations.length, 1);
   assert.equal(loaded.deletedConversations.length, 1);
   assert.equal(loaded.deletedConversations[0].id, c1.id);
+  assert.equal(loaded.deletedConversations[0].deleted, true);
   assert.equal(loaded.preferences.voiceSettings?.languageMode, 'bn');
   assert.equal(loaded.preferences.modelSettings?.chatModel, 'gemini-2.5-pro');
   assert.equal(loaded.preferences.appSettings?.showLineNumbers, false);
@@ -222,6 +223,7 @@ test('IndexedDbWorkspaceRepository handles CRUD, Trash vs permanent delete tombs
   assert.equal(loaded.conversations.length, 2);
   assert.equal(loaded.deletedConversations.length, 0);
   assert.equal(loaded.conversations.find((c) => c.id === c1.id)?.messages.length, 2);
+  assert.equal(loaded.conversations.find((c) => c.id === c1.id)?.deleted, false);
 
   // Permanent delete c2 -> creates conversation + message tombstones and cleans linked voice session v2
   await repo.moveConversationToTrash(c2);
@@ -1128,3 +1130,85 @@ test('Phase 3: applyRemoteSyncChanges avoids outbox echo and deleteAccountLocalD
 });
 
 
+
+
+test('v4 to v5 migration purges conflict copies and deleted conversations with remote tombstones', async () => {
+  const dbName = uniqueDbName('tombstone_migration');
+  const legacyRequest = indexedDB.open(dbName, DB_VERSION - 1);
+
+  await new Promise<void>((resolve, reject) => {
+    legacyRequest.onupgradeneeded = () => {
+      const db = legacyRequest.result;
+      db.createObjectStore(STORE_CONVERSATIONS, { keyPath: 'id' });
+      db.createObjectStore(STORE_DELETED, { keyPath: 'id' });
+      db.createObjectStore(STORE_MESSAGES, { keyPath: 'id' });
+    };
+    legacyRequest.onerror = () => reject(legacyRequest.error);
+    legacyRequest.onsuccess = () => {
+      const db = legacyRequest.result;
+      const tx = db.transaction([STORE_CONVERSATIONS, STORE_DELETED, STORE_MESSAGES], 'readwrite');
+      tx.objectStore(STORE_CONVERSATIONS).put({
+        id: 'legacy-conflict-copy',
+        title: 'Original Chat (Conflict Copy)',
+        kind: 'chat',
+        projectId: null,
+        createdAt: '2026-02-01T10:00:00.000Z',
+        updatedAt: '2026-02-01T11:00:00.000Z',
+        isPinned: false,
+        revision: 2,
+        ownerUid: 'uid-1',
+        syncStatus: 'pending',
+        summary: '',
+        messages: [],
+      });
+      tx.objectStore(STORE_DELETED).put({
+        id: 'legacy-deleted-flag',
+        title: 'Already Deleted',
+        kind: 'chat',
+        projectId: null,
+        createdAt: '2026-02-01T10:00:00.000Z',
+        updatedAt: '2026-02-01T11:00:00.000Z',
+        deleted: true,
+        isPinned: false,
+        revision: 1,
+        ownerUid: 'uid-1',
+        syncStatus: 'pending',
+        summary: '',
+        messages: [],
+      });
+      tx.objectStore(STORE_MESSAGES).put({
+        id: 'legacy-conflict-message',
+        conversationId: 'legacy-conflict-copy',
+        orderIndex: 0,
+        role: 'user',
+        content: 'Legacy conflict message',
+        timestamp: '10:00',
+        createdAt: '2026-02-01T10:00:00.000Z',
+        updatedAt: '2026-02-01T10:00:00.000Z',
+        revision: 1,
+        ownerUid: 'uid-1',
+        syncStatus: 'pending',
+        source: 'text',
+      });
+      tx.oncomplete = () => {
+        db.close();
+        resolve();
+      };
+      tx.onerror = () => reject(tx.error);
+    };
+  });
+
+  const repo = new IndexedDbWorkspaceRepository(dbName);
+  const snapshot = await repo.loadWorkspace();
+  assert.equal(snapshot.conversations.length, 0);
+  assert.equal(snapshot.deletedConversations.length, 0);
+
+  const tombstones = await repo.readTombstones({ ownerUid: 'uid-1' });
+  assert.ok(tombstones.some((row) => row.entityType === 'conversation' && row.entityId === 'legacy-conflict-copy'));
+  assert.ok(tombstones.some((row) => row.entityType === 'conversation' && row.entityId === 'legacy-deleted-flag'));
+  assert.ok(tombstones.some((row) => row.entityType === 'message' && row.entityId === 'legacy-conflict-message'));
+
+  const outbox = await repo.readOutbox({ ownerUid: 'uid-1' });
+  assert.ok(outbox.some((row) => row.entityType === 'conversation' && row.entityId === 'legacy-conflict-copy' && row.operation === 'delete'));
+  assert.ok(outbox.some((row) => row.entityType === 'conversation' && row.entityId === 'legacy-deleted-flag' && row.operation === 'delete'));
+});
