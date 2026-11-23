@@ -536,7 +536,7 @@ export function ProjectsWorkspace({
                         <button
                           type="button"
                           onClick={() => onSelectProject(project.id, 'code')}
-                          className="min-h-[40px] px-3 rounded-lg bg-raised hover:bg-white/[0.1] text-xs font-medium text-ink inline-flex items-center gap-1.5"
+                          className="min-h-[40px] px-3 rounded-lg bg-raised hover:bg-surface text-xs font-medium text-ink inline-flex items-center gap-1.5"
                         >
                           <Code2 className="w-3.5 h-3.5 text-signal" />
                           Code
@@ -545,7 +545,7 @@ export function ProjectsWorkspace({
                         <button
                           type="button"
                           onClick={() => onSelectProject(project.id, 'preview')}
-                          className="min-h-[40px] px-3 rounded-lg bg-raised hover:bg-white/[0.1] text-xs font-medium text-ink inline-flex items-center gap-1.5"
+                          className="min-h-[40px] px-3 rounded-lg bg-raised hover:bg-surface text-xs font-medium text-ink inline-flex items-center gap-1.5"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           Preview
