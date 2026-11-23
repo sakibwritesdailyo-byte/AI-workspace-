@@ -907,6 +907,110 @@ function openDatabase(dbName = DB_NAME): Promise<IDBDatabase> {
           }
         };
       }
+
+      // One-time v4 -> v5 cleanup: purge generated conflict copies and explicitly deleted rows.
+      if (event.oldVersion < 5) {
+        const activeConversationsReq = convStore.getAll();
+        const deletedConversationsReq = deletedStore.getAll();
+        const allMessagesReq = msgStore.getAll();
+        let migrationReads = 0;
+
+        const finishConversationCleanup = () => {
+          migrationReads += 1;
+          if (migrationReads !== 3) return;
+
+          const activeRows = (activeConversationsReq.result as Array<Conversation>) ?? [];
+          const deletedRows = (deletedConversationsReq.result as Array<Conversation>) ?? [];
+          const messageRows = (allMessagesReq.result as Array<StoredMessageRecord>) ?? [];
+          const cleanupById = new Map<string, Conversation>();
+
+          for (const row of [...activeRows, ...deletedRows]) {
+            if (!row || typeof row.id !== 'string' || !row.id) continue;
+            const isConflictCopy =
+              typeof row.title === 'string' && /\\(Conflict Copy\\)/i.test(row.title);
+            if (row.deleted === true || isConflictCopy) cleanupById.set(row.id, row);
+          }
+
+          for (const [conversationId, conversation] of cleanupById) {
+            convStore.delete(conversationId);
+            deletedStore.delete(conversationId);
+
+            const ownerUid = normalizeOwnerUid(conversation.ownerUid);
+            const baseRevision = normalizeRevision(conversation.revision, 1);
+            const revision = baseRevision + 1;
+            const parentId = conversation.projectId ?? null;
+            const linkedMessages = new Map<string, Partial<ChatMessage> & { id: string }>();
+
+            for (const message of conversation.messages ?? []) {
+              if (message && typeof message.id === 'string') linkedMessages.set(message.id, message);
+            }
+            for (const message of messageRows) {
+              if (message.conversationId === conversationId) linkedMessages.set(message.id, message);
+            }
+
+            for (const message of linkedMessages.values()) {
+              msgStore.delete(message.id);
+              const messageRevision = normalizeRevision(message.revision, 1);
+              const messageOwner = normalizeOwnerUid(message.ownerUid ?? ownerUid);
+              tombstoneStore.put({
+                id: createTombstoneId('message', message.id),
+                entityType: 'message',
+                entityId: message.id,
+                parentId: conversationId,
+                deletedAt: nowIso,
+                revision: messageRevision + 1,
+                ownerUid: messageOwner,
+                syncStatus: normalizeSyncStatus(message.syncStatus),
+                acknowledgedAt: null,
+              } satisfies SyncTombstoneRecord);
+              upsertOutboxInTx(
+                outboxStore,
+                buildOutboxRecord({
+                  entityType: 'message',
+                  entityId: message.id,
+                  parentId: conversationId,
+                  operation: 'delete',
+                  revision: messageRevision + 1,
+                  baseRevision: messageRevision,
+                  ownerUid: messageOwner,
+                  updatedAt: nowIso,
+                  deletedAt: nowIso,
+                }),
+              );
+            }
+
+            tombstoneStore.put({
+              id: createTombstoneId('conversation', conversationId),
+              entityType: 'conversation',
+              entityId: conversationId,
+              parentId,
+              deletedAt: nowIso,
+              revision,
+              ownerUid,
+              syncStatus: normalizeSyncStatus(conversation.syncStatus),
+              acknowledgedAt: null,
+            } satisfies SyncTombstoneRecord);
+            upsertOutboxInTx(
+              outboxStore,
+              buildOutboxRecord({
+                entityType: 'conversation',
+                entityId: conversationId,
+                parentId,
+                operation: 'delete',
+                revision,
+                baseRevision,
+                ownerUid,
+                updatedAt: nowIso,
+                deletedAt: nowIso,
+              }),
+            );
+          }
+        };
+
+        activeConversationsReq.onsuccess = finishConversationCleanup;
+        deletedConversationsReq.onsuccess = finishConversationCleanup;
+        allMessagesReq.onsuccess = finishConversationCleanup;
+      }
     };
 
     request.onsuccess = () => resolve(request.result);
