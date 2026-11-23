@@ -191,7 +191,7 @@ export function HistoryWorkspace({
         </div>
 
         <label className="relative flex-1 sm:max-w-xs">
-          <Search className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-signal absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="search"
             value={searchQuery}
